@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HYPERGRID CHESS</title>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
@@ -11,19 +12,90 @@
 </head>
 <body>
 <h1>HYPERGRID CHESS ♟️</h1>
-<p>Drag pieces to conquer the board.</p>
-<div id="myBoard"></div>
-<div id="status"></div>
-<div class="controls">
-<button onclick="resetGame()">New Game</button>
-<button onclick="flipBoard()">Flip Board</button>
+
+<div class="game-container">
+  <div class="side-panel left-panel">
+    <div class="captured-section">
+      <h3>Captured (White)</h3>
+      <div id="capturedWhite" class="captured-pieces"></div>
+    </div>
+    <div class="timer-section">
+      <div class="timer white-timer" id="whiteTimer">
+        <span class="timer-label">WHITE</span>
+        <span class="timer-display">10:00</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="center-section">
+    <div class="controls-top">
+      <div class="control-group">
+        <label>Mode:</label>
+        <select id="gameMode" onchange="changeGameMode()">
+          <option value="pvp">2 Player</option>
+          <option value="ai" selected>vs AI</option>
+        </select>
+      </div>
+      <div class="control-group" id="difficultyGroup">
+        <label>Difficulty:</label>
+        <select id="aiDifficulty" onchange="changeDifficulty()">
+          <option value="1">Easy</option>
+          <option value="2" selected>Medium</option>
+          <option value="3">Hard</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Time:</label>
+        <select id="timeControl" onchange="changeTimeControl()">
+          <option value="0">Unlimited</option>
+          <option value="180">Blitz 3+0</option>
+          <option value="600" selected>Rapid 10+0</option>
+          <option value="1800">Classical 30+0</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <button id="soundToggle" onclick="toggleSound()" class="icon-btn" title="Toggle Sound">🔊</button>
+      </div>
+    </div>
+
+    <div id="myBoard"></div>
+
+    <div class="controls-bottom">
+      <button onclick="resetGame()">New Game</button>
+      <button onclick="undoMove()">Undo</button>
+      <button onclick="flipBoard()">Flip Board</button>
+      <button onclick="saveGame()">Save</button>
+      <button onclick="loadGame()">Load</button>
+    </div>
+
+    <div id="status"></div>
+  </div>
+
+  <div class="side-panel right-panel">
+    <div class="timer-section">
+      <div class="timer black-timer" id="blackTimer">
+        <span class="timer-label">BLACK</span>
+        <span class="timer-display">10:00</span>
+      </div>
+    </div>
+    <div class="captured-section">
+      <h3>Captured (Black)</h3>
+      <div id="capturedBlack" class="captured-pieces"></div>
+    </div>
+    <div class="move-history-section">
+      <h3>Move History</h3>
+      <div id="moveHistory" class="move-history"></div>
+    </div>
+  </div>
 </div>
+
 <div id="promotionModal" class="modal-overlay">
   <div class="modal-content">
     <h2>Select Promotion</h2>
     <div id="promoPieces"></div>
   </div>
 </div>
+
 <script src="game.js"></script>
 </body>
 </html>
