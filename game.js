@@ -15,9 +15,25 @@ var capturedBlack = [];
 var gameStarted = false;
 var stockfish = null;
 var stockfishTimeoutId = null;
+var isAIMoving = false;
+var audioContext = null;
 
 var statusEl = document.getElementById("status");
 var boardEl = document.getElementById("myBoard");
+
+var urlParams = new URLSearchParams(window.location.search);
+var urlMode = urlParams.get('mode');
+if (urlMode === 'pvp' || urlMode === 'ai') {
+  gameMode = urlMode;
+  var gameModeEl = document.getElementById('gameMode');
+  if (gameModeEl) {
+    gameModeEl.value = gameMode;
+  }
+  var difficultyGroup = document.getElementById('difficultyGroup');
+  if (difficultyGroup) {
+    difficultyGroup.style.display = gameMode === 'ai' ? 'flex' : 'none';
+  }
+}
 
 function getPieceTheme(piece) {
   return `https://lichess1.org/assets/piece/pixel/${piece}.svg`;
@@ -65,6 +81,10 @@ function handleStockfishResponse(event) {
     }
     
     var bestMove = message.split(' ')[1];
+    isAIMoving = false;
+    
+    console.log('Stockfish best move:', bestMove);
+    
     if (bestMove && bestMove !== '(none)') {
       var from = bestMove.substring(0, 2);
       var to = bestMove.substring(2, 4);
@@ -100,7 +120,11 @@ function handleStockfishResponse(event) {
           san: move.san
         });
 
-        board.position(game.fen());
+        try {
+          board.position(game.fen());
+        } catch (e) {
+          console.error('Error updating board position:', e);
+        }
         updateStatus();
         updateTheme();
         updateMoveHistory();
@@ -111,45 +135,7 @@ function handleStockfishResponse(event) {
   }
 }
 
-function fallbackAIMove() {
-  var moves = game.moves();
-  if (moves.length === 0) return;
-  
-  var move = moves[Math.floor(Math.random() * moves.length)];
-  var result = game.move(move);
-  
-  if (result) {
-    if (result.captured) {
-      var capturedColor = result.color === 'w' ? 'b' : 'w';
-      var capturedPiece = result.captured.toUpperCase();
-      if (capturedColor === 'w') {
-        capturedWhite.push(capturedPiece);
-      } else {
-        capturedBlack.push(capturedPiece);
-      }
-      playSound('capture');
-    } else {
-      playSound('move');
-    }
 
-    moveHistory.push({
-      from: result.from,
-      to: result.to,
-      piece: result.piece,
-      color: result.color,
-      captured: result.captured,
-      promotion: result.promotion,
-      san: result.san
-    });
-
-    board.position(game.fen());
-    updateStatus();
-    updateTheme();
-    updateMoveHistory();
-    updateCapturedPieces();
-    saveToLocalStorage();
-  }
-}
 
 function onDragStart(source, piece) {
   if (game.game_over()) return false;
@@ -220,7 +206,11 @@ function onDrop(source, target) {
 }
 
 function onSnapEnd() {
-  board.position(game.fen());
+  try {
+    board.position(game.fen());
+  } catch (e) {
+    console.error('Error in onSnapEnd board.position:', e);
+  }
   if (boardEl.hasAttribute('data-valid-move')) {
     updateStatus();
     updateTheme();
@@ -287,7 +277,11 @@ function promote(pieceType) {
       san: move.san
     });
     
-    board.position(game.fen());
+    try {
+      board.position(game.fen());
+    } catch (e) {
+      console.error('Error in promote board.position:', e);
+    }
     pendingMove = null;
     
     updateStatus();
@@ -296,24 +290,36 @@ function promote(pieceType) {
     updateCapturedPieces();
     saveToLocalStorage();
 
-    if (gameMode === 'ai' && !game.game_over()) {
+    if (gameMode === 'ai' && !game.game_over() && game.turn() === 'b') {
       setTimeout(makeAIMove, 300);
     }
   }
 }
 
 function makeAIMove() {
-  if (!stockfish || game.game_over()) {
-    fallbackAIMove();
+  if (!stockfish) {
+    console.error('Stockfish not loaded - cannot make AI move');
     return;
   }
-
-  var depth = aiDifficulty === 1 ? 8 : aiDifficulty === 2 ? 12 : 16;
+  
+  if (game.game_over() || game.turn() !== 'b') {
+    return;
+  }
+  
+  if (isAIMoving) {
+    console.log('AI already moving, skipping');
+    return;
+  }
+  
+  isAIMoving = true;
+  
+  var depth = aiDifficulty === 1 ? 8 : aiDifficulty === 2 ? 12 : 20;
+  var timeoutMs = aiDifficulty === 1 ? 3000 : aiDifficulty === 2 ? 5000 : 15000;
   
   stockfishTimeoutId = setTimeout(function() {
-    console.log('Stockfish timeout, using fallback');
-    fallbackAIMove();
-  }, 5000);
+    console.log('Stockfish timeout');
+    isAIMoving = false;
+  }, timeoutMs);
   
   stockfish.postMessage('position fen ' + game.fen());
   stockfish.postMessage('go depth ' + depth);
@@ -447,6 +453,11 @@ function resetGame() {
   updateTimers();
   stopTimer();
   isTimerRunning = false;
+  isAIMoving = false;
+  if (stockfishTimeoutId) {
+    clearTimeout(stockfishTimeoutId);
+    stockfishTimeoutId = null;
+  }
   updateStatus();
   updateTheme();
   updateMoveHistory();
@@ -486,7 +497,11 @@ function undoMove() {
     }
   }
   
-  board.position(game.fen());
+  try {
+    board.position(game.fen());
+  } catch (e) {
+    console.error('Error in undoMove board.position:', e);
+  }
   updateStatus();
   updateTheme();
   updateMoveHistory();
@@ -496,10 +511,14 @@ function undoMove() {
 
 function changeGameMode() {
   var select = document.getElementById('gameMode');
+  if (!select) return;
+  
   gameMode = select.value;
   
   var difficultyGroup = document.getElementById('difficultyGroup');
-  difficultyGroup.style.display = gameMode === 'ai' ? 'flex' : 'none';
+  if (difficultyGroup) {
+    difficultyGroup.style.display = gameMode === 'ai' ? 'flex' : 'none';
+  }
   
   resetGame();
 }
@@ -592,7 +611,10 @@ function toggleSound() {
 function playSound(type) {
   if (!soundEnabled) return;
   
-  var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  
   var oscillator = audioContext.createOscillator();
   var gainNode = audioContext.createGain();
   
@@ -679,12 +701,23 @@ function loadGame() {
     aiDifficulty = saveData.aiDifficulty || 2;
     timeControl = saveData.timeControl || 600;
     
-    document.getElementById('gameMode').value = gameMode;
-    document.getElementById('aiDifficulty').value = aiDifficulty;
-    document.getElementById('timeControl').value = timeControl;
+    var gameModeEl = document.getElementById('gameMode');
+    if (gameModeEl) {
+      gameModeEl.value = gameMode;
+    }
+    var aiDifficultyEl = document.getElementById('aiDifficulty');
+    if (aiDifficultyEl) {
+      aiDifficultyEl.value = aiDifficulty;
+    }
+    var timeControlEl = document.getElementById('timeControl');
+    if (timeControlEl) {
+      timeControlEl.value = timeControl;
+    }
     
     var difficultyGroup = document.getElementById('difficultyGroup');
-    difficultyGroup.style.display = gameMode === 'ai' ? 'flex' : 'none';
+    if (difficultyGroup) {
+      difficultyGroup.style.display = gameMode === 'ai' ? 'flex' : 'none';
+    }
     
     updateTimers();
     updateStatus();
