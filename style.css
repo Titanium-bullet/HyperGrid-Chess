@@ -182,27 +182,27 @@ button:active{
   0 0 20px rgba(0,255,0,0.6);
 }
 
-img{
+#myBoard img{
   transform:translateZ(0);
   will-change:transform,filter;
   transition:transform .25s,filter .25s;
 }
 
-img[src*="w"]{
+#myBoard img[src*="wK"],#myBoard img[src*="wQ"],#myBoard img[src*="wR"],#myBoard img[src*="wB"],#myBoard img[src*="wN"],#myBoard img[src*="wP"]{
   filter:
   drop-shadow(0 0 6px cyan)
   drop-shadow(0 0 14px cyan)
   drop-shadow(0 0 32px cyan);
 }
 
-img[src*="b"]{
+#myBoard img[src*="bK"],#myBoard img[src*="bQ"],#myBoard img[src*="bR"],#myBoard img[src*="bB"],#myBoard img[src*="bN"],#myBoard img[src*="bP"]{
   filter:
   drop-shadow(0 0 6px violet)
   drop-shadow(0 0 14px violet)
   drop-shadow(0 0 32px violet);
 }
 
-img:hover{
+#myBoard img:hover{
   transform:scale(1.08);
 }
 

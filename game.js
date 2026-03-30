@@ -9,6 +9,7 @@ var blackTime = 600;
 var timerInterval = null;
 var isTimerRunning = false;
 var soundEnabled = true;
+var muteSounds = false;
 var moveHistory = [];
 var capturedWhite = [];
 var capturedBlack = [];
@@ -253,8 +254,13 @@ function promote(pieceType) {
       to: pendingMove.to,
       promotion: pieceType
     });
-    
-    if (move && move.captured) {
+
+    if (!move) {
+      pendingMove = null;
+      return;
+    }
+
+    if (move.captured) {
       var capturedColor = move.color === 'w' ? 'b' : 'w';
       var capturedPiece = move.captured.toUpperCase();
       if (capturedColor === 'w') {
@@ -263,7 +269,7 @@ function promote(pieceType) {
         capturedBlack.push(capturedPiece);
       }
       playSound('capture');
-    } else if (move) {
+    } else {
       playSound('move');
     }
 
@@ -331,19 +337,19 @@ function updateStatus() {
     var moveColor = game.turn() === 'w' ? 'White' : 'Black';
     if (game.in_checkmate()) {
       status = `Game Over — ${moveColor} is checkmated`;
-      playSound('gameover');
+      if (!muteSounds) playSound('gameover');
       stopTimer();
     }
     else if (game.in_draw()) {
       status = 'Game Over — Draw';
-      playSound('gameover');
+      if (!muteSounds) playSound('gameover');
       stopTimer();
     }
     else {
       status = `${moveColor}'s turn`;
       if (game.in_check()) {
         status += ' (CHECK!)';
-        playSound('check');
+        if (!muteSounds) playSound('check');
       }
     }
     statusEl.textContent = status;
@@ -469,13 +475,40 @@ function flipBoard() {
   board.flip();
 }
 
+function cancelPendingAI() {
+  if (stockfishTimeoutId) {
+    clearTimeout(stockfishTimeoutId);
+    stockfishTimeoutId = null;
+  }
+  isAIMoving = false;
+}
+
+function replayMoveHistory(history) {
+  game.reset();
+  for (var i = 0; i < history.length; i++) {
+    var m = history[i];
+    var result = game.move({
+      from: m.from,
+      to: m.to,
+      promotion: m.promotion || 'q'
+    });
+    if (!result) {
+      console.warn('Replay: failed to apply move', m, 'at index', i);
+      break;
+    }
+  }
+}
+
 function undoMove() {
   if (moveHistory.length === 0) return;
-  
-  game.undo();
+
+  cancelPendingAI();
+
+  var lastUndo = game.undo();
+  if (!lastUndo) return;
   
   var lastMove = moveHistory.pop();
-  if (lastMove.captured) {
+  if (lastMove && lastMove.captured) {
     var capturedColor = lastMove.color === 'w' ? 'b' : 'w';
     if (capturedColor === 'w' && capturedWhite.length > 0) {
       capturedWhite.pop();
@@ -484,10 +517,10 @@ function undoMove() {
     }
   }
 
-  if (gameMode === 'ai' && moveHistory.length > 0) {
+  if (gameMode === 'ai' && moveHistory.length > 0 && game.turn() === 'b') {
     game.undo();
     var aiMove = moveHistory.pop();
-    if (aiMove.captured) {
+    if (aiMove && aiMove.captured) {
       var aiCapturedColor = aiMove.color === 'w' ? 'b' : 'w';
       if (aiCapturedColor === 'w' && capturedWhite.length > 0) {
         capturedWhite.pop();
@@ -502,7 +535,9 @@ function undoMove() {
   } catch (e) {
     console.error('Error in undoMove board.position:', e);
   }
+  muteSounds = true;
   updateStatus();
+  muteSounds = false;
   updateTheme();
   updateMoveHistory();
   updateCapturedPieces();
@@ -533,6 +568,11 @@ function changeTimeControl() {
   timeControl = parseInt(select.value);
   whiteTime = timeControl;
   blackTime = timeControl;
+  stopTimer();
+  isTimerRunning = false;
+  if (gameStarted && timeControl > 0 && !game.game_over()) {
+    startTimer();
+  }
   updateTimers();
 }
 
@@ -614,6 +654,10 @@ function playSound(type) {
   if (!audioContext) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
   }
+
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
   
   var oscillator = audioContext.createOscillator();
   var gainNode = audioContext.createGain();
@@ -689,17 +733,21 @@ function loadGame() {
   try {
     var saveData = JSON.parse(saved);
     
-    game.load(saveData.fen);
-    board.position(saveData.fen);
-    
     moveHistory = saveData.moveHistory || [];
     capturedWhite = saveData.capturedWhite || [];
     capturedBlack = saveData.capturedBlack || [];
-    whiteTime = saveData.whiteTime || timeControl;
-    blackTime = saveData.blackTime || timeControl;
+    whiteTime = saveData.whiteTime != null ? saveData.whiteTime : timeControl;
+    blackTime = saveData.blackTime != null ? saveData.blackTime : timeControl;
     gameMode = saveData.gameMode || 'ai';
     aiDifficulty = saveData.aiDifficulty || 2;
     timeControl = saveData.timeControl || 600;
+
+    if (moveHistory.length > 0) {
+      replayMoveHistory(moveHistory);
+    } else {
+      game.load(saveData.fen);
+    }
+    board.position(game.fen());
     
     var gameModeEl = document.getElementById('gameMode');
     if (gameModeEl) {
@@ -720,12 +768,14 @@ function loadGame() {
     }
     
     updateTimers();
+    muteSounds = true;
     updateStatus();
+    muteSounds = false;
     updateTheme();
     updateMoveHistory();
     updateCapturedPieces();
     
-    if (timeControl > 0) {
+    if (timeControl > 0 && !game.game_over()) {
       gameStarted = true;
       startTimer();
     }
