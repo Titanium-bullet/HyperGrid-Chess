@@ -319,12 +319,12 @@ function makeAIMove() {
   
   isAIMoving = true;
   
-  var depth = aiDifficulty === 1 ? 8 : aiDifficulty === 2 ? 12 : 20;
-  var timeoutMs = aiDifficulty === 1 ? 3000 : aiDifficulty === 2 ? 5000 : 15000;
+  var depth = aiDifficulty === 1 ? 8 : aiDifficulty === 2 ? 12 : 16;
+  var timeoutMs = aiDifficulty === 1 ? 3000 : aiDifficulty === 2 ? 5000 : 10000;
   
   stockfishTimeoutId = setTimeout(function() {
-    console.log('Stockfish timeout');
-    isAIMoving = false;
+    console.log('Stockfish timeout — forcing best move');
+    stockfish.postMessage('stop');
   }, timeoutMs);
   
   stockfish.postMessage('position fen ' + game.fen());
