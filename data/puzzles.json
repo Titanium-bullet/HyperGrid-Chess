@@ -1,0 +1,164 @@
+{
+  "puzzles": [
+    {
+      "id": 1,
+      "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+      "solution": ["Qxf7#"],
+      "hint": "The queen and bishop both target f7. Deliver checkmate!",
+      "difficulty": 1,
+      "description": "Scholar's Mate — Checkmate in one!"
+    },
+    {
+      "id": 2,
+      "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 3 3",
+      "solution": ["Qxf7#"],
+      "hint": "The f7 pawn is only defended by the king. Your queen has a clear path.",
+      "difficulty": 1,
+      "description": "Wayward Queen — Checkmate in one!"
+    },
+    {
+      "id": 3,
+      "fen": "rnbqkbnr/ppppp2p/5p2/6pQ/4P3/8/PPPP1PPP/RNB1KBNR w KQkq - 0 3",
+      "solution": ["Qxh5#"],
+      "hint": "Black weakened the kingside. The queen can strike with checkmate!",
+      "difficulty": 1,
+      "description": "Early Mate — Punish the blunder!"
+    },
+    {
+      "id": 4,
+      "fen": "6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1",
+      "solution": ["Re8#"],
+      "hint": "A rook on the back rank can deliver checkmate. Look for Re8.",
+      "difficulty": 1,
+      "description": "Back Rank Mate — Finish the game!"
+    },
+    {
+      "id": 5,
+      "fen": "r1bqkb1r/pppppppp/2n5/8/2kP4/8/PPP2PPP/RNBQKBNR b KQkq - 0 3",
+      "solution": ["Qh4"],
+      "hint": "The d4 pawn has no defenders. Attack it with check from the queen!",
+      "difficulty": 1,
+      "description": "Win a pawn — Queen attacks d4 with check!"
+    },
+    {
+      "id": 6,
+      "fen": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+      "solution": ["d4"],
+      "hint": "Strike the center with d4 to open lines and attack e5.",
+      "difficulty": 2,
+      "description": "Center Break — d4 opens the position!"
+    },
+    {
+      "id": 7,
+      "fen": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/4P3/2N2Q2/PPPP1PPP/R1B1KBNR b KQkq - 3 3",
+      "solution": ["Nd4"],
+      "hint": "A knight to d4 attacks the queen on f3 and forks key squares.",
+      "difficulty": 2,
+      "description": "Knight Attack — Fork the queen!"
+    },
+    {
+      "id": 8,
+      "fen": "r2qkb1r/ppp1pppp/2n2n2/3p1b2/2PP4/2N2N2/PP2PPPP/R1BQKB1R b KQkq c3 0 4",
+      "solution": ["dxc4"],
+      "hint": "Accept the gambit pawn. Capture on c4.",
+      "difficulty": 1,
+      "description": "Queen's Gambit Accepted — Take the pawn!"
+    },
+    {
+      "id": 9,
+      "fen": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/4P3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq - 4 4",
+      "solution": ["Nxe4"],
+      "hint": "The e4 pawn is no longer defended. Capture it with the knight!",
+      "difficulty": 2,
+      "description": "Central Strike — Win the e4 pawn!"
+    },
+    {
+      "id": 10,
+      "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p3/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 2",
+      "solution": ["exd4"],
+      "hint": "Capture the d4 pawn in the center. Simplify!",
+      "difficulty": 1,
+      "description": "Center Capture — Take the pawn!"
+    },
+    {
+      "id": 11,
+      "fen": "r1bqkb1r/pppppppp/5n2/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 2",
+      "solution": ["e5"],
+      "hint": "Advance the e-pawn to attack the d4 pawn and gain space.",
+      "difficulty": 2,
+      "description": "Pawn Advance — Control the center!"
+    },
+    {
+      "id": 12,
+      "fen": "r1bqk2r/pppp1ppp/2n2n2/2b1p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+      "solution": ["Qxf7"],
+      "hint": "Both bishop and queen aim at f7. Capture and win the pawn!",
+      "difficulty": 2,
+      "description": "Battery Attack — Win f7 pawn!"
+    },
+    {
+      "id": 13,
+      "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+      "solution": ["Nxe5"],
+      "hint": "The e5 pawn can be captured. The knight takes it safely.",
+      "difficulty": 2,
+      "description": "Knight Capture — Win the center pawn!"
+    },
+    {
+      "id": 14,
+      "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+      "solution": ["d3"],
+      "hint": "Develop with d3, supporting the center and opening the bishop.",
+      "difficulty": 1,
+      "description": "Solid Development — d3 supports the center!"
+    },
+    {
+      "id": 15,
+      "fen": "r2qk2r/ppp2ppp/2np1n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 5",
+      "solution": ["Nxe5"],
+      "hint": "The knight can capture e5. The d6 pawn can recapture but you win a pawn.",
+      "difficulty": 2,
+      "description": "Tactics — Capture the loose pawn!"
+    },
+    {
+      "id": 16,
+      "fen": "r1bqk2r/ppp2ppp/2n1bn2/3pp3/4P3/2N2N2/PPPPBPPP/R1BQK2R w KQkq f6 0 5",
+      "solution": ["Nxe5"],
+      "hint": "The e5 pawn looks defended but Nxe5 is a fork! After dxe5, Bxf7+ wins.",
+      "difficulty": 3,
+      "description": "Knight Fork — Win material with a tactic!"
+    },
+    {
+      "id": 17,
+      "fen": "r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 1 2",
+      "solution": ["d4"],
+      "hint": "Counter in the center with d4. Gain space and open lines.",
+      "difficulty": 1,
+      "description": "Central Pawn — d4 fights for control!"
+    },
+    {
+      "id": 18,
+      "fen": "r1bqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
+      "solution": ["e5"],
+      "hint": "Strike back in the center with e5, gaining space.",
+      "difficulty": 1,
+      "description": "Counter-punch — Push e5!"
+    },
+    {
+      "id": 19,
+      "fen": "r1bqk2r/bppp2pp/2n2n2/4p3/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 5",
+      "solution": ["dxe5"],
+      "hint": "Capture the e5 pawn to open the center and win material.",
+      "difficulty": 2,
+      "description": "Center Exchange — Win the pawn!"
+    },
+    {
+      "id": 20,
+      "fen": "r1bqkb1r/1ppp1ppp/p1n2n2/4p3/B3P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4",
+      "solution": ["d3"],
+      "hint": "Solidify the center with d3, developing and preparing castling.",
+      "difficulty": 1,
+      "description": "Quiet Development — d3 prepares castling!"
+    }
+  ]
+}

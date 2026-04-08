@@ -291,16 +291,31 @@ button.btn-danger:hover{
 }
 
 #status{
-  font-size:20px;
+  font-size:22px;
   font-weight:bold;
+  margin-top:12px;
+  margin-bottom:4px;
+  transition: color 0.4s ease, text-shadow 0.4s ease;
+}
+
+#status.white-turn{
+  color:#00ffff;
+  text-shadow:0 0 8px rgba(0,255,255,0.5);
+}
+
+#status.black-turn{
+  color:#ba55dc;
+  text-shadow:0 0 8px rgba(186,85,211,0.5);
 }
 
 #status.check{
   color:#ff6b6b;
+  text-shadow:0 0 10px rgba(255,107,107,0.6);
 }
 
 #status.gameover{
   color:#e94560;
+  text-shadow:0 0 10px rgba(233,69,96,0.6);
 }
 
 .timers-row{

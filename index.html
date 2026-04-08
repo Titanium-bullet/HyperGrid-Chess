@@ -313,44 +313,19 @@
     var twinkleIdx = Math.floor(Math.random() * verts.length);
     var nextTwinkle = 4000;
 
-    var tracers = [];
-    var nextTracer = 500;
-
     var rings = [];
-    var nextRing = 1000;
-
-    function spawnTracer() {
-      var isH = Math.random() < 0.5;
-      var edges = isH ? hEdges : vEdges;
-      var edge = edges[Math.floor(Math.random() * edges.length)];
-      var sx, sy, ex, ey;
-      if (isH) {
-        sx = edge.x1; sy = edge.y; ex = edge.x2; ey = edge.y;
-      } else {
-        sx = edge.x; sy = edge.y1; ex = edge.x; ey = edge.y2;
-      }
-      if (Math.random() < 0.5) {
-        var tmpx = sx, tmpy = sy; sx = ex; sy = ey; ex = tmpx; ey = tmpy;
-      }
-      tracers.push({
-        sx: sx, sy: sy, ex: ex, ey: ey,
-        t: 0,
-        speed: 0.02 + Math.random() * 0.015,
-        trail: []
-      });
-      nextTracer = 1200 + Math.random() * 2000;
-    }
+    var nextRing = 1500;
 
     function spawnRing() {
       var v = verts[Math.floor(Math.random() * verts.length)];
-      rings.push({ x: v.x, y: v.y, t: 0, speed: 0.012 });
-      nextRing = 2000 + Math.random() * 3000;
+      rings.push({ x: v.x, y: v.y, t: 0, speed: 0.006 });
+      nextRing = 1500 + Math.random() * 2500;
     }
 
-    var GLYPH_SIZE = 35;
-    var GLYPH_GAP = 20;
-    var GLYPH_ARM = 14;
-    var glyphFadeStart = 3500;
+    var GLYPH_SIZE = 40;
+    var GLYPH_GAP = 55;
+    var GLYPH_ARM = 22;
+    var glyphFadeStart = 4000;
 
     function drawGlyph(cx, cy, angle, opacity) {
       ctx.save();
@@ -419,48 +394,48 @@
           var e = hEdges[i];
           if (e.dist < waveFront) {
             var edgeProgress = Math.min((waveFront - e.dist) / 0.15, 1);
-            e.brightness = edgeProgress * 0.5;
+            e.brightness = edgeProgress * 0.8;
           }
         }
         for (var i = 0; i < vEdges.length; i++) {
           var e = vEdges[i];
           if (e.dist < waveFront) {
             var edgeProgress = Math.min((waveFront - e.dist) / 0.15, 1);
-            e.brightness = edgeProgress * 0.5;
+            e.brightness = edgeProgress * 0.8;
           }
         }
         for (var i = 0; i < verts.length; i++) {
           var v = verts[i];
           if (v.dist < waveFront) {
-            v.brightness = Math.min((waveFront - v.dist) / 0.1, 1) * 0.7;
+            v.brightness = Math.min((waveFront - v.dist) / 0.1, 1) * 1.0;
           }
         }
       } else if (elapsed < IDLE_START) {
         var pulseT = (elapsed - PULSE_START) / PULSE_DURATION;
         var pulseRadius = pulseT * 1.4;
-        var pulseBright = (1 - pulseT) * 0.8;
+        var pulseBright = (1 - pulseT) * 1.0;
 
         for (var i = 0; i < hEdges.length; i++) {
           var e = hEdges[i];
           var d = Math.abs(e.dist - pulseRadius);
-          var boost = d < 0.1 ? (1 - d / 0.1) * pulseBright : 0;
-          e.brightness = 0.5 + boost;
+          var boost = d < 0.15 ? (1 - d / 0.15) * pulseBright : 0;
+          e.brightness = 0.8 + boost;
         }
         for (var i = 0; i < vEdges.length; i++) {
           var e = vEdges[i];
           var d = Math.abs(e.dist - pulseRadius);
-          var boost = d < 0.1 ? (1 - d / 0.1) * pulseBright : 0;
-          e.brightness = 0.5 + boost;
+          var boost = d < 0.15 ? (1 - d / 0.15) * pulseBright : 0;
+          e.brightness = 0.8 + boost;
         }
         for (var i = 0; i < verts.length; i++) {
           var v = verts[i];
           var d = Math.abs(v.dist - pulseRadius);
-          var boost = d < 0.1 ? (1 - d / 0.1) * pulseBright : 0;
-          v.brightness = 0.7 + boost * 0.5;
+          var boost = d < 0.15 ? (1 - d / 0.15) * pulseBright : 0;
+          v.brightness = 1.0 + boost * 0.5;
         }
       } else {
         var settleT = Math.min((elapsed - IDLE_START) / 1500, 1);
-        var idleBase = 0.06 * settleT;
+        var idleBase = 0.15 * settleT;
 
         nextTwinkle -= 16;
         if (nextTwinkle <= 0) {
@@ -475,28 +450,23 @@
           vEdges[i].brightness = idleBase;
         }
         for (var i = 0; i < verts.length; i++) {
-          verts[i].brightness = idleBase * 1.2;
+          verts[i].brightness = idleBase * 1.5;
         }
 
         var twinkle = verts[twinkleIdx];
         if (twinkle) {
           var twinkleLife = nextTwinkle / (800 + 2000);
-          var twinklePeak = Math.sin(twinkleLife * Math.PI) * 0.8;
-          twinkle.brightness = idleBase * 1.2 + twinklePeak;
+          var twinklePeak = Math.sin(twinkleLife * Math.PI) * 1.0;
+          twinkle.brightness = idleBase * 1.5 + twinklePeak;
         }
 
-        if (tracers.length < 2) {
-          nextTracer -= 16;
-          if (nextTracer <= 0) spawnTracer();
-        }
-
-        if (rings.length < 1) {
+        if (rings.length < 2) {
           nextRing -= 16;
           if (nextRing <= 0) spawnRing();
         }
       }
 
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.5;
       for (var i = 0; i < hEdges.length; i++) {
         var e = hEdges[i];
         if (e.brightness < 0.005) continue;
@@ -521,40 +491,8 @@
         if (v.brightness < 0.01) continue;
         ctx.fillStyle = 'rgba(0,255,255,' + v.brightness + ')';
         ctx.beginPath();
-        ctx.arc(v.x, v.y, 1.5, 0, Math.PI * 2);
+        ctx.arc(v.x, v.y, 2.5, 0, Math.PI * 2);
         ctx.fill();
-      }
-
-      for (var i = tracers.length - 1; i >= 0; i--) {
-        var tr = tracers[i];
-        tr.t += tr.speed;
-        if (tr.t >= 1) { tracers.splice(i, 1); continue; }
-
-        var px = tr.sx + (tr.ex - tr.sx) * tr.t;
-        var py = tr.sy + (tr.ey - tr.sy) * tr.t;
-
-        tr.trail.push({ x: px, y: py });
-        if (tr.trail.length > 8) tr.trail.shift();
-
-        for (var j = 0; j < tr.trail.length; j++) {
-          var tp = tr.trail[j];
-          var ta = (j / tr.trail.length) * 0.6;
-          ctx.fillStyle = 'rgba(0,255,255,' + ta + ')';
-          ctx.beginPath();
-          ctx.arc(tp.x, tp.y, 2.5, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        ctx.fillStyle = 'rgba(0,255,255,0.9)';
-        ctx.beginPath();
-        ctx.arc(px, py, 3.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        var headGlow = ctx.createRadialGradient(px, py, 0, px, py, 20);
-        headGlow.addColorStop(0, 'rgba(0,255,255,0.4)');
-        headGlow.addColorStop(1, 'rgba(0,255,255,0)');
-        ctx.fillStyle = headGlow;
-        ctx.fillRect(px - 20, py - 20, 40, 40);
       }
 
       for (var i = rings.length - 1; i >= 0; i--) {
@@ -562,8 +500,8 @@
         rn.t += rn.speed;
         if (rn.t >= 1) { rings.splice(i, 1); continue; }
 
-        var radius = 2 + rn.t * 30;
-        var alpha = (1 - rn.t) * 0.7;
+        var radius = 2 + rn.t * 50;
+        var alpha = (1 - rn.t) * 0.8;
 
         ctx.strokeStyle = 'rgba(0,255,255,' + alpha + ')';
         ctx.lineWidth = 1.5;
@@ -571,19 +509,27 @@
         ctx.arc(rn.x, rn.y, radius, 0, Math.PI * 2);
         ctx.stroke();
 
-        var ringGlow = ctx.createRadialGradient(rn.x, rn.y, radius - 5, rn.x, rn.y, radius + 10);
+        if (radius > 10) {
+          ctx.strokeStyle = 'rgba(0,255,255,' + (alpha * 0.4) + ')';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(rn.x, rn.y, radius * 0.6, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        var ringGlow = ctx.createRadialGradient(rn.x, rn.y, radius * 0.5, rn.x, rn.y, radius + 15);
         ringGlow.addColorStop(0, 'rgba(0,255,255,0)');
-        ringGlow.addColorStop(0.5, 'rgba(0,255,255,' + (alpha * 0.4) + ')');
+        ringGlow.addColorStop(0.7, 'rgba(0,255,255,' + (alpha * 0.2) + ')');
         ringGlow.addColorStop(1, 'rgba(0,255,255,0)');
         ctx.fillStyle = ringGlow;
         ctx.beginPath();
-        ctx.arc(rn.x, rn.y, radius + 6, 0, Math.PI * 2);
+        ctx.arc(rn.x, rn.y, radius + 15, 0, Math.PI * 2);
         ctx.fill();
       }
 
       if (elapsed > glyphFadeStart) {
         var glyphAge = elapsed - glyphFadeStart;
-        var glyphAlpha = Math.min(glyphAge / 2000, 1) * (0.3 + 0.15 * Math.sin(elapsed / 4000));
+        var glyphAlpha = Math.min(glyphAge / 2000, 1) * (0.6 + 0.25 * Math.sin(elapsed / 4000));
         var glyphAngle = (elapsed / 30000) * Math.PI * 2;
 
         drawGlyph(GLYPH_GAP, GLYPH_GAP, glyphAngle, glyphAlpha);

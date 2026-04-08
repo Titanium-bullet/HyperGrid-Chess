@@ -18,9 +18,13 @@
   }
 
   .game-container, h1, .controls-top, .controls-bottom, #status,
-  .modal-overlay, .puzzle-bar, .puzzle-buttons, .ai-thinking, .opening-name {
+  .puzzle-bar, .puzzle-buttons, .ai-thinking, .opening-name {
     position: relative;
     z-index: 1;
+  }
+
+  .modal-overlay {
+    z-index: 1000;
   }
 </style>
 </head>
@@ -93,13 +97,13 @@
 
     <div id="openingName" class="opening-name"></div>
 
+    <div id="status"></div>
+
     <div class="controls-bottom">
       <button onclick="location.href='index.html'">&#8592; Menu</button>
       <button onclick="resetGame()">New Game</button>
       <button onclick="undoMove()">Undo</button>
       <button id="flipBtn" onclick="handleFlipOrSwitch()">Play as Black</button>
-      <button onclick="saveGame()">Save</button>
-      <button onclick="loadGame()">Load</button>
     </div>
 
     <div id="puzzleButtons" class="puzzle-buttons" style="display:none;">
@@ -109,8 +113,6 @@
       <button onclick="nextPuzzle()">Next Puzzle</button>
       <span class="puzzle-solved-count">Solved: <span id="puzzlesSolvedCount">0</span></span>
     </div>
-
-    <div id="status"></div>
   </div>
 
   <div class="side-panel right-panel">
