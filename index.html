@@ -18,25 +18,19 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 25%, #0a1628 50%, #0d1a2e 75%, #1a0a1a 100%);
-      background-size: 400% 400%;
-      animation: gradientShift 15s ease infinite;
+      background: #0a0a14;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       position: relative;
       overflow: hidden;
     }
 
-    body::before {
-      content: '';
-      position: absolute;
+    #cyberCanvas {
+      position: fixed;
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
-      background-image: 
-        linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
-      background-size: 50px 50px;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
       pointer-events: none;
     }
 
@@ -47,14 +41,15 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
+      background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.5) 100%);
       pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      animation: vignetteFadeIn 1s ease 3s forwards;
     }
 
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    @keyframes vignetteFadeIn {
+      to { opacity: 1; }
     }
 
     h1 {
@@ -65,7 +60,28 @@
       letter-spacing: 4px;
       position: relative;
       z-index: 1;
-      animation: titleGlow 3s ease-in-out infinite alternate;
+      opacity: 0;
+      animation: titleEntry 1.2s cubic-bezier(0.16, 1, 0.3, 1) 1.5s forwards,
+                 titleGlow 3s ease-in-out 2.7s infinite alternate;
+    }
+
+    @keyframes titleEntry {
+      0% {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.8);
+        text-shadow: 0 0 80px rgba(233, 69, 96, 1), 0 0 160px rgba(233, 69, 96, 0.8), 0 0 240px rgba(233, 69, 96, 0.5);
+        letter-spacing: 20px;
+      }
+      60% {
+        opacity: 1;
+        transform: translateY(5px) scale(1.02);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        letter-spacing: 4px;
+        text-shadow: 0 0 30px rgba(233, 69, 96, 0.6), 0 0 60px rgba(233, 69, 96, 0.3);
+      }
     }
 
     @keyframes titleGlow {
@@ -96,12 +112,51 @@
       letter-spacing: 2px;
       text-decoration: none;
       display: inline-block;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: btnEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .menu-btn:nth-child(1) { animation-delay: 2.5s; }
+    .menu-btn:nth-child(2) { animation-delay: 2.65s; }
+    .menu-btn:nth-child(3) { animation-delay: 2.8s; }
+    .menu-btn:nth-child(4) { animation-delay: 2.95s; }
+    .menu-btn:nth-child(5) { animation-delay: 3.1s; }
+
+    @keyframes btnEntry {
+      0% {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .menu-btn.primary {
       background: linear-gradient(135deg, #e94560 0%, #c73e54 100%);
       color: white;
       box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+    }
+
+    .menu-btn.primary::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -60%;
+      width: 40%;
+      height: 200%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+      transform: skewX(-20deg);
+      animation: btnShimmer 4s ease-in-out infinite;
+    }
+
+    @keyframes btnShimmer {
+      0%, 75%, 100% { left: -60%; }
+      90% { left: 120%; }
     }
 
     .menu-btn.primary:hover {
@@ -114,12 +169,25 @@
       color: white;
       border: 2px solid rgba(233, 69, 96, 0.6);
       box-shadow: 0 4px 15px rgba(233, 69, 96, 0.2);
+      animation: btnEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+                 neonBorder 4s ease-in-out infinite;
+    }
+
+    .menu-btn.secondary:nth-child(2) { animation-delay: 2.65s, 0s; }
+    .menu-btn.secondary:nth-child(3) { animation-delay: 2.8s, 0.5s; }
+    .menu-btn.secondary:nth-child(5) { animation-delay: 3.1s, 1s; }
+
+    @keyframes neonBorder {
+      0%, 100% { border-color: rgba(233, 69, 96, 0.6); box-shadow: 0 4px 15px rgba(233, 69, 96, 0.2); }
+      33% { border-color: rgba(0, 255, 255, 0.6); box-shadow: 0 4px 15px rgba(0, 255, 255, 0.15); }
+      66% { border-color: rgba(186, 85, 211, 0.6); box-shadow: 0 4px 15px rgba(186, 85, 211, 0.15); }
     }
 
     .menu-btn.secondary:hover {
       background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(15, 52, 96, 0.8) 100%);
       transform: translateY(-3px);
       box-shadow: 0 6px 25px rgba(233, 69, 96, 0.4);
+      border-color: rgba(233, 69, 96, 0.9);
     }
 
     .menu-btn.disabled {
@@ -127,7 +195,6 @@
       color: #666;
       border: 2px solid #444;
       cursor: not-allowed;
-      opacity: 0.6;
     }
 
     .menu-btn.disabled:hover {
@@ -146,6 +213,8 @@
   </style>
 </head>
 <body>
+  <canvas id="cyberCanvas"></canvas>
+
   <h1>HYPERGRID CHESS</h1>
   
   <div class="menu-container">
@@ -159,6 +228,11 @@
       <span class="subtitle">Local multiplayer</span>
     </a>
     
+    <a href="chess.html?mode=puzzle" class="menu-btn secondary">
+      Daily Puzzle
+      <span class="subtitle">Train your tactics</span>
+    </a>
+    
     <div class="menu-btn disabled">
       Checkers
       <span class="subtitle">Coming soon</span>
@@ -169,5 +243,360 @@
       <span class="subtitle">Learn more</span>
     </a>
   </div>
+
+  <script>
+  (function() {
+    var canvas = document.getElementById('cyberCanvas');
+    var ctx = canvas.getContext('2d');
+    var W, H;
+    var GRID = 60;
+    var startTime = Date.now();
+
+    var verts = [];
+    var hEdges = [];
+    var vEdges = [];
+
+    function buildGrid() {
+      var cols = Math.ceil(W / GRID) + 2;
+      var rows = Math.ceil(H / GRID) + 2;
+      var cx = W / 2;
+      var cy = H / 2;
+      var maxDist = Math.sqrt(cx * cx + cy * cy);
+
+      verts = [];
+      hEdges = [];
+      vEdges = [];
+
+      for (var r = 0; r <= rows; r++) {
+        for (var c = 0; c <= cols; c++) {
+          var x = c * GRID;
+          var y = r * GRID;
+          var dx = x - cx;
+          var dy = y - cy;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          var norm = dist / maxDist;
+          verts.push({ x: x, y: y, dist: norm, brightness: 0 });
+        }
+      }
+
+      for (var r = 0; r <= rows; r++) {
+        for (var c = 0; c < cols; c++) {
+          var x1 = c * GRID;
+          var x2 = (c + 1) * GRID;
+          var y = r * GRID;
+          var mx = (x1 + x2) / 2;
+          var dist = Math.sqrt((mx - cx) * (mx - cx) + (y - cy) * (y - cy)) / maxDist;
+          hEdges.push({ x1: x1, y: y, x2: x2, dist: dist, brightness: 0 });
+        }
+      }
+
+      for (var c = 0; c <= cols; c++) {
+        for (var r = 0; r < rows; r++) {
+          var x = c * GRID;
+          var y1 = r * GRID;
+          var y2 = (r + 1) * GRID;
+          var my = (y1 + y2) / 2;
+          var dist = Math.sqrt((x - cx) * (x - cx) + (my - cy) * (my - cy)) / maxDist;
+          vEdges.push({ x: x, y1: y1, y2: y2, dist: dist, brightness: 0 });
+        }
+      }
+    }
+
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      buildGrid();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    var twinkleIdx = Math.floor(Math.random() * verts.length);
+    var nextTwinkle = 4000;
+
+    var tracers = [];
+    var nextTracer = 2000;
+
+    var rings = [];
+    var nextRing = 3000;
+
+    function spawnTracer() {
+      var isH = Math.random() < 0.5;
+      var edges = isH ? hEdges : vEdges;
+      var edge = edges[Math.floor(Math.random() * edges.length)];
+      var sx, sy, ex, ey;
+      if (isH) {
+        sx = edge.x1; sy = edge.y; ex = edge.x2; ey = edge.y;
+      } else {
+        sx = edge.x; sy = edge.y1; ex = edge.x; ey = edge.y2;
+      }
+      if (Math.random() < 0.5) {
+        var tmpx = sx, tmpy = sy; sx = ex; sy = ey; ex = tmpx; ey = tmpy;
+      }
+      tracers.push({
+        sx: sx, sy: sy, ex: ex, ey: ey,
+        t: 0,
+        speed: 0.012 + Math.random() * 0.008,
+        trail: []
+      });
+      nextTracer = 2000 + Math.random() * 3000;
+    }
+
+    function spawnRing() {
+      var v = verts[Math.floor(Math.random() * verts.length)];
+      rings.push({ x: v.x, y: v.y, t: 0, speed: 0.018 });
+      nextRing = 3000 + Math.random() * 4000;
+    }
+
+    var GLYPH_SIZE = 35;
+    var GLYPH_GAP = 20;
+    var GLYPH_ARM = 12;
+    var glyphFadeStart = 4000;
+
+    function drawGlyph(cx, cy, angle, opacity) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(angle);
+      ctx.strokeStyle = 'rgba(0,255,255,' + opacity + ')';
+      ctx.lineWidth = 1;
+
+      ctx.beginPath();
+      ctx.moveTo(-GLYPH_SIZE, -GLYPH_SIZE);
+      ctx.lineTo(-GLYPH_SIZE, -GLYPH_SIZE + GLYPH_ARM);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(-GLYPH_SIZE, -GLYPH_SIZE);
+      ctx.lineTo(-GLYPH_SIZE + GLYPH_ARM, -GLYPH_SIZE);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(GLYPH_SIZE, -GLYPH_SIZE);
+      ctx.lineTo(GLYPH_SIZE, -GLYPH_SIZE + GLYPH_ARM);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(GLYPH_SIZE, -GLYPH_SIZE);
+      ctx.lineTo(GLYPH_SIZE - GLYPH_ARM, -GLYPH_SIZE);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(-GLYPH_SIZE, GLYPH_SIZE);
+      ctx.lineTo(-GLYPH_SIZE, GLYPH_SIZE - GLYPH_ARM);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(-GLYPH_SIZE, GLYPH_SIZE);
+      ctx.lineTo(-GLYPH_SIZE + GLYPH_ARM, GLYPH_SIZE);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(GLYPH_SIZE, GLYPH_SIZE);
+      ctx.lineTo(GLYPH_SIZE, GLYPH_SIZE - GLYPH_ARM);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(GLYPH_SIZE, GLYPH_SIZE);
+      ctx.lineTo(GLYPH_SIZE - GLYPH_ARM, GLYPH_SIZE);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function draw() {
+      var elapsed = Date.now() - startTime;
+      ctx.clearRect(0, 0, W, H);
+
+      var DRAW_PHASE = 2500;
+      var PULSE_START = 2500;
+      var PULSE_DURATION = 600;
+      var IDLE_START = PULSE_START + PULSE_DURATION;
+
+      if (elapsed < DRAW_PHASE) {
+        var progress = elapsed / DRAW_PHASE;
+        var waveFront = progress * 1.3;
+
+        for (var i = 0; i < hEdges.length; i++) {
+          var e = hEdges[i];
+          if (e.dist < waveFront) {
+            var edgeProgress = Math.min((waveFront - e.dist) / 0.15, 1);
+            e.brightness = edgeProgress * 0.5;
+          }
+        }
+        for (var i = 0; i < vEdges.length; i++) {
+          var e = vEdges[i];
+          if (e.dist < waveFront) {
+            var edgeProgress = Math.min((waveFront - e.dist) / 0.15, 1);
+            e.brightness = edgeProgress * 0.5;
+          }
+        }
+        for (var i = 0; i < verts.length; i++) {
+          var v = verts[i];
+          if (v.dist < waveFront) {
+            v.brightness = Math.min((waveFront - v.dist) / 0.1, 1) * 0.7;
+          }
+        }
+      } else if (elapsed < IDLE_START) {
+        var pulseT = (elapsed - PULSE_START) / PULSE_DURATION;
+        var pulseRadius = pulseT * 1.4;
+        var pulseBright = (1 - pulseT) * 0.8;
+
+        for (var i = 0; i < hEdges.length; i++) {
+          var e = hEdges[i];
+          var d = Math.abs(e.dist - pulseRadius);
+          var boost = d < 0.1 ? (1 - d / 0.1) * pulseBright : 0;
+          e.brightness = 0.5 + boost;
+        }
+        for (var i = 0; i < vEdges.length; i++) {
+          var e = vEdges[i];
+          var d = Math.abs(e.dist - pulseRadius);
+          var boost = d < 0.1 ? (1 - d / 0.1) * pulseBright : 0;
+          e.brightness = 0.5 + boost;
+        }
+        for (var i = 0; i < verts.length; i++) {
+          var v = verts[i];
+          var d = Math.abs(v.dist - pulseRadius);
+          var boost = d < 0.1 ? (1 - d / 0.1) * pulseBright : 0;
+          v.brightness = 0.7 + boost * 0.5;
+        }
+      } else {
+        var settleT = Math.min((elapsed - IDLE_START) / 1500, 1);
+        var idleBase = 0.06 * settleT;
+
+        nextTwinkle -= 16;
+        if (nextTwinkle <= 0) {
+          twinkleIdx = Math.floor(Math.random() * verts.length);
+          nextTwinkle = 800 + Math.random() * 2000;
+        }
+
+        for (var i = 0; i < hEdges.length; i++) {
+          hEdges[i].brightness = idleBase;
+        }
+        for (var i = 0; i < vEdges.length; i++) {
+          vEdges[i].brightness = idleBase;
+        }
+        for (var i = 0; i < verts.length; i++) {
+          verts[i].brightness = idleBase * 1.2;
+        }
+
+        var twinkle = verts[twinkleIdx];
+        if (twinkle) {
+          var twinkleLife = nextTwinkle / (800 + 2000);
+          var twinklePeak = Math.sin(twinkleLife * Math.PI) * 0.8;
+          twinkle.brightness = idleBase * 1.2 + twinklePeak;
+        }
+
+        if (tracers.length < 2) {
+          nextTracer -= 16;
+          if (nextTracer <= 0) spawnTracer();
+        }
+
+        if (rings.length < 1) {
+          nextRing -= 16;
+          if (nextRing <= 0) spawnRing();
+        }
+      }
+
+      ctx.lineWidth = 1;
+      for (var i = 0; i < hEdges.length; i++) {
+        var e = hEdges[i];
+        if (e.brightness < 0.005) continue;
+        ctx.strokeStyle = 'rgba(0,255,255,' + e.brightness + ')';
+        ctx.beginPath();
+        ctx.moveTo(e.x1, e.y);
+        ctx.lineTo(e.x2, e.y);
+        ctx.stroke();
+      }
+      for (var i = 0; i < vEdges.length; i++) {
+        var e = vEdges[i];
+        if (e.brightness < 0.005) continue;
+        ctx.strokeStyle = 'rgba(0,255,255,' + e.brightness + ')';
+        ctx.beginPath();
+        ctx.moveTo(e.x, e.y1);
+        ctx.lineTo(e.x, e.y2);
+        ctx.stroke();
+      }
+
+      for (var i = 0; i < verts.length; i++) {
+        var v = verts[i];
+        if (v.brightness < 0.01) continue;
+        ctx.fillStyle = 'rgba(0,255,255,' + v.brightness + ')';
+        ctx.beginPath();
+        ctx.arc(v.x, v.y, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      for (var i = tracers.length - 1; i >= 0; i--) {
+        var tr = tracers[i];
+        tr.t += tr.speed;
+        if (tr.t >= 1) { tracers.splice(i, 1); continue; }
+
+        var px = tr.sx + (tr.ex - tr.sx) * tr.t;
+        var py = tr.sy + (tr.ey - tr.sy) * tr.t;
+
+        tr.trail.push({ x: px, y: py });
+        if (tr.trail.length > 8) tr.trail.shift();
+
+        for (var j = 0; j < tr.trail.length; j++) {
+          var tp = tr.trail[j];
+          var ta = (j / tr.trail.length) * 0.3;
+          ctx.fillStyle = 'rgba(0,255,255,' + ta + ')';
+          ctx.beginPath();
+          ctx.arc(tp.x, tp.y, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.fillStyle = 'rgba(0,255,255,0.7)';
+        ctx.beginPath();
+        ctx.arc(px, py, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        var headGlow = ctx.createRadialGradient(px, py, 0, px, py, 15);
+        headGlow.addColorStop(0, 'rgba(0,255,255,0.25)');
+        headGlow.addColorStop(1, 'rgba(0,255,255,0)');
+        ctx.fillStyle = headGlow;
+        ctx.fillRect(px - 15, py - 15, 30, 30);
+      }
+
+      for (var i = rings.length - 1; i >= 0; i--) {
+        var rn = rings[i];
+        rn.t += rn.speed;
+        if (rn.t >= 1) { rings.splice(i, 1); continue; }
+
+        var radius = 2 + rn.t * 22;
+        var alpha = (1 - rn.t) * 0.45;
+
+        ctx.strokeStyle = 'rgba(0,255,255,' + alpha + ')';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(rn.x, rn.y, radius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        var ringGlow = ctx.createRadialGradient(rn.x, rn.y, radius - 3, rn.x, rn.y, radius + 6);
+        ringGlow.addColorStop(0, 'rgba(0,255,255,0)');
+        ringGlow.addColorStop(0.5, 'rgba(0,255,255,' + (alpha * 0.3) + ')');
+        ringGlow.addColorStop(1, 'rgba(0,255,255,0)');
+        ctx.fillStyle = ringGlow;
+        ctx.beginPath();
+        ctx.arc(rn.x, rn.y, radius + 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (elapsed > glyphFadeStart) {
+        var glyphAge = elapsed - glyphFadeStart;
+        var glyphAlpha = Math.min(glyphAge / 2000, 1) * (0.15 + 0.1 * Math.sin(elapsed / 4000));
+        var glyphAngle = (elapsed / 30000) * Math.PI * 2;
+
+        drawGlyph(GLYPH_GAP, GLYPH_GAP, glyphAngle, glyphAlpha);
+        drawGlyph(W - GLYPH_GAP, GLYPH_GAP, glyphAngle, glyphAlpha);
+        drawGlyph(GLYPH_GAP, H - GLYPH_GAP, glyphAngle, glyphAlpha);
+        drawGlyph(W - GLYPH_GAP, H - GLYPH_GAP, glyphAngle, glyphAlpha);
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    requestAnimationFrame(draw);
+  })();
+  </script>
 </body>
 </html>
