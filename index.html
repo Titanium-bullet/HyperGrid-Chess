@@ -314,10 +314,10 @@
     var nextTwinkle = 4000;
 
     var tracers = [];
-    var nextTracer = 2000;
+    var nextTracer = 500;
 
     var rings = [];
-    var nextRing = 3000;
+    var nextRing = 1000;
 
     function spawnTracer() {
       var isH = Math.random() < 0.5;
@@ -335,22 +335,22 @@
       tracers.push({
         sx: sx, sy: sy, ex: ex, ey: ey,
         t: 0,
-        speed: 0.012 + Math.random() * 0.008,
+        speed: 0.02 + Math.random() * 0.015,
         trail: []
       });
-      nextTracer = 2000 + Math.random() * 3000;
+      nextTracer = 1200 + Math.random() * 2000;
     }
 
     function spawnRing() {
       var v = verts[Math.floor(Math.random() * verts.length)];
-      rings.push({ x: v.x, y: v.y, t: 0, speed: 0.018 });
-      nextRing = 3000 + Math.random() * 4000;
+      rings.push({ x: v.x, y: v.y, t: 0, speed: 0.012 });
+      nextRing = 2000 + Math.random() * 3000;
     }
 
     var GLYPH_SIZE = 35;
     var GLYPH_GAP = 20;
-    var GLYPH_ARM = 12;
-    var glyphFadeStart = 4000;
+    var GLYPH_ARM = 14;
+    var glyphFadeStart = 3500;
 
     function drawGlyph(cx, cy, angle, opacity) {
       ctx.save();
@@ -538,23 +538,23 @@
 
         for (var j = 0; j < tr.trail.length; j++) {
           var tp = tr.trail[j];
-          var ta = (j / tr.trail.length) * 0.3;
+          var ta = (j / tr.trail.length) * 0.6;
           ctx.fillStyle = 'rgba(0,255,255,' + ta + ')';
           ctx.beginPath();
-          ctx.arc(tp.x, tp.y, 2, 0, Math.PI * 2);
+          ctx.arc(tp.x, tp.y, 2.5, 0, Math.PI * 2);
           ctx.fill();
         }
 
-        ctx.fillStyle = 'rgba(0,255,255,0.7)';
+        ctx.fillStyle = 'rgba(0,255,255,0.9)';
         ctx.beginPath();
-        ctx.arc(px, py, 3, 0, Math.PI * 2);
+        ctx.arc(px, py, 3.5, 0, Math.PI * 2);
         ctx.fill();
 
-        var headGlow = ctx.createRadialGradient(px, py, 0, px, py, 15);
-        headGlow.addColorStop(0, 'rgba(0,255,255,0.25)');
+        var headGlow = ctx.createRadialGradient(px, py, 0, px, py, 20);
+        headGlow.addColorStop(0, 'rgba(0,255,255,0.4)');
         headGlow.addColorStop(1, 'rgba(0,255,255,0)');
         ctx.fillStyle = headGlow;
-        ctx.fillRect(px - 15, py - 15, 30, 30);
+        ctx.fillRect(px - 20, py - 20, 40, 40);
       }
 
       for (var i = rings.length - 1; i >= 0; i--) {
@@ -562,18 +562,18 @@
         rn.t += rn.speed;
         if (rn.t >= 1) { rings.splice(i, 1); continue; }
 
-        var radius = 2 + rn.t * 22;
-        var alpha = (1 - rn.t) * 0.45;
+        var radius = 2 + rn.t * 30;
+        var alpha = (1 - rn.t) * 0.7;
 
         ctx.strokeStyle = 'rgba(0,255,255,' + alpha + ')';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.arc(rn.x, rn.y, radius, 0, Math.PI * 2);
         ctx.stroke();
 
-        var ringGlow = ctx.createRadialGradient(rn.x, rn.y, radius - 3, rn.x, rn.y, radius + 6);
+        var ringGlow = ctx.createRadialGradient(rn.x, rn.y, radius - 5, rn.x, rn.y, radius + 10);
         ringGlow.addColorStop(0, 'rgba(0,255,255,0)');
-        ringGlow.addColorStop(0.5, 'rgba(0,255,255,' + (alpha * 0.3) + ')');
+        ringGlow.addColorStop(0.5, 'rgba(0,255,255,' + (alpha * 0.4) + ')');
         ringGlow.addColorStop(1, 'rgba(0,255,255,0)');
         ctx.fillStyle = ringGlow;
         ctx.beginPath();
@@ -583,7 +583,7 @@
 
       if (elapsed > glyphFadeStart) {
         var glyphAge = elapsed - glyphFadeStart;
-        var glyphAlpha = Math.min(glyphAge / 2000, 1) * (0.15 + 0.1 * Math.sin(elapsed / 4000));
+        var glyphAlpha = Math.min(glyphAge / 2000, 1) * (0.3 + 0.15 * Math.sin(elapsed / 4000));
         var glyphAngle = (elapsed / 30000) * Math.PI * 2;
 
         drawGlyph(GLYPH_GAP, GLYPH_GAP, glyphAngle, glyphAlpha);
