@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Time - HyperGrid Chess</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #0a0a14;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+      padding: 2rem 1.5rem;
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .page-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.8rem;
+      color: #e94560;
+      text-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+      letter-spacing: 3px;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-subtitle {
+      font-size: 0.85rem;
+      color: #888;
+      letter-spacing: 2px;
+      margin-bottom: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .time-sections {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 580px;
+    }
+
+    .time-category {
+      margin-bottom: 1.5rem;
+    }
+
+    .category-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+
+    .category-label.bullet { color: #ff6b6b; }
+    .category-label.blitz { color: #4ecdc4; }
+    .category-label.rapid { color: #ba55dc; }
+    .category-label.unlimited-label { color: #666; }
+
+    .time-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .time-card {
+      flex: 1;
+      min-width: 80px;
+      max-width: 110px;
+      padding: 18px 12px;
+      border-radius: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(145deg, #1a1a2e, #16213e);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .time-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      border-radius: 8px;
+    }
+
+    .time-card:hover { transform: translateY(-3px); }
+
+    .time-card.bullet::before { background: radial-gradient(ellipse at center, rgba(255, 107, 107, 0.08), transparent 70%); }
+    .time-card.blitz::before { background: radial-gradient(ellipse at center, rgba(78, 205, 196, 0.08), transparent 70%); }
+    .time-card.rapid::before { background: radial-gradient(ellipse at center, rgba(186, 85, 220, 0.08), transparent 70%); }
+    .time-card.unlimited::before { background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.04), transparent 70%); }
+
+    .time-card:hover::before { opacity: 1; }
+
+    .time-card.bullet:hover { border-color: rgba(255, 107, 107, 0.6); box-shadow: 0 4px 20px rgba(255, 107, 107, 0.2); }
+    .time-card.blitz:hover { border-color: rgba(78, 205, 196, 0.6); box-shadow: 0 4px 20px rgba(78, 205, 196, 0.2); }
+    .time-card.rapid:hover { border-color: rgba(186, 85, 220, 0.6); box-shadow: 0 4px 20px rgba(186, 85, 220, 0.2); }
+    .time-card.unlimited:hover { border-color: rgba(255, 255, 255, 0.3); box-shadow: 0 4px 20px rgba(255, 255, 255, 0.08); }
+
+    .time-card:active { transform: translateY(0) scale(0.97); }
+
+    .time-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .time-card.bullet .time-value { color: #ff6b6b; }
+    .time-card.blitz .time-value { color: #4ecdc4; }
+    .time-card.rapid .time-value { color: #ba55dc; }
+    .time-card.unlimited .time-value { color: #888; font-size: 1.6rem; }
+
+    .time-label {
+      font-size: 0.65rem;
+      color: #666;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .back-btn {
+      display: inline-block;
+      padding: 10px 24px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, rgba(15, 52, 96, 0.8), rgba(26, 26, 46, 0.9));
+      color: white;
+      border: 1px solid rgba(233, 69, 96, 0.4);
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 1.5rem;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .back-btn:hover {
+      border-color: rgba(233, 69, 96, 0.8);
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 600px) {
+      .page-title { font-size: 1.3rem; }
+      .time-card { min-width: 65px; padding: 14px 8px; }
+      .time-value { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-title">Select Time Control</div>
+  <div class="page-subtitle" id="modeLabel"></div>
+
+  <div class="time-sections">
+    <div class="time-category">
+      <div class="category-label bullet">Bullet</div>
+      <div class="time-row">
+        <a href="javascript:void(0)" class="time-card bullet" onclick="startGame(60, 0)">
+          <div class="time-value">1+0</div>
+          <div class="time-label">1 min</div>
+        </a>
+        <a href="javascript:void(0)" class="time-card bullet" onclick="startGame(60, 1)">
+          <div class="time-value">1+1</div>
+          <div class="time-label">1 min</div>
+        </a>
+        <a href="javascript:void(0)" class="time-card bullet" onclick="startGame(120, 1)">
+          <div class="time-value">2+1</div>
+          <div class="time-label">2 min</div>
+        </a>
+        <a href="javascript:void(0)" class="time-card bullet" onclick="startGame(180, 0)">
+          <div class="time-value">3+0</div>
+          <div class="time-label">3 min</div>
+        </a>
+        <a href="javascript:void(0)" class="time-card bullet" onclick="startGame(180, 2)">
+          <div class="time-value">3+2</div>
+          <div class="time-label">3 min</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="time-category">
+      <div class="category-label blitz">Blitz</div>
+      <div class="time-row">
+        <a href="javascript:void(0)" class="time-card blitz" onclick="startGame(300, 0)">
+          <div class="time-value">5+0</div>
+          <div class="time-label">5 min</div>
+        </a>
+        <a href="javascript:void(0)" class="time-card blitz" onclick="startGame(300, 3)">
+          <div class="time-value">5+3</div>
+          <div class="time-label">5 min</div>
+        </a>
+        <a href="javascript:void(0)" class="time-card blitz" onclick="startGame(300, 5)">
+          <div class="time-value">5+5</div>
+          <div class="time-label">5 min</div>
+        </a>
+        <a href="javascript:void(0)" class="time-card blitz" onclick="startGame(600, 0)">
+          <div class="time-value">10+0</div>
+          <div class="time-label">10 min</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="time-category">
+      <div class="category-label rapid">Rapid</div>
+      <div class="time-row">
+        <a href="javascript:void(0)" class="time-card rapid" onclick="startGame(900, 10)">
+          <div class="time-value">15+10</div>
+          <div class="time-label">15 min</div>
+        </a>
+        <a href="javascript:void(0)" class="time-card rapid" onclick="startGame(1800, 0)">
+          <div class="time-value">30+0</div>
+          <div class="time-label">30 min</div>
+        </a>
+        <a href="javascript:void(0)" class="time-card rapid" onclick="startGame(1800, 20)">
+          <div class="time-value">30+20</div>
+          <div class="time-label">30 min</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="time-category">
+      <div class="category-label unlimited-label">No Time Limit</div>
+      <div class="time-row">
+        <a href="javascript:void(0)" class="time-card unlimited" onclick="startGame(0, 0)">
+          <div class="time-value">&infin;</div>
+          <div class="time-label">Unlimited</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <a href="play.html" class="back-btn">&larr; Back</a>
+
+  <script>
+    var currentMode = 'ai';
+    var currentDiff = '1';
+
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var mode = params.get('mode');
+      var diff = params.get('diff');
+      if (mode) currentMode = mode;
+      if (diff) currentDiff = diff;
+
+      var labelEl = document.getElementById('modeLabel');
+      var backBtn = document.querySelector('.back-btn');
+      if (currentMode === 'pvp') {
+        labelEl.textContent = 'Two Player Mode';
+        if (backBtn) backBtn.href = 'play.html';
+      } else {
+        var names = { '1': 'Nova', '2': 'Phantom', '3': 'Overlord', '4': 'HyperGrid' };
+        labelEl.textContent = 'vs ' + (names[currentDiff] || 'AI');
+        if (backBtn) backBtn.href = 'ai-select.html';
+      }
+    })();
+
+    function startGame(time, inc) {
+      var url = 'chess.html?mode=' + encodeURIComponent(currentMode);
+      if (time > 0) {
+        url += '&time=' + time;
+        if (inc > 0) url += '&inc=' + inc;
+      }
+      if (currentMode === 'ai') {
+        url += '&diff=' + encodeURIComponent(currentDiff);
+      }
+      window.location.href = url;
+    }
+  </script>
+</body>
+</html>

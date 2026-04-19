@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,44 +33,68 @@
 
 <div class="game-container">
   <div class="side-panel left-panel">
-    <div class="ai-profile" id="aiProfileSection">
-      <div class="ai-profile-img-wrap">
-        <img id="aiProfileImg" src="images/ai-profile.png" alt="AI" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-        <div class="ai-profile-placeholder" style="display:none;">&#9818;</div>
-      </div>
-      <div class="ai-profile-info">
-        <span class="ai-profile-name" id="aiProfileName">Beginner</span>
-        <span class="ai-profile-elo" id="aiProfileElo">~500 ELO</span>
+    <div class="panel-widget ai-profile" id="aiProfileSection">
+      <div class="ai-profile-body">
+        <div class="ai-profile-img-wrap">
+          <img id="aiProfileImg" src="images/beginner.jpg" alt="AI">
+          <div class="ai-profile-placeholder" style="display:none;">&#9818;</div>
+        </div>
+        <div class="ai-profile-info">
+          <span class="ai-profile-name" id="aiProfileName">Nova</span>
+          <span class="ai-profile-elo" id="aiProfileElo">~500 ELO</span>
+        </div>
       </div>
     </div>
-    <div class="captured-section" id="leftCaptured">
-      <h3>White Captured <span id="materialWhite" class="material-advantage"></span></h3>
-      <div id="capturedWhite" class="captured-pieces"></div>
+
+    <div class="panel-widget ai-profile" id="rivalProfileSection" style="display:none;">
+      <div class="ai-profile-body">
+        <div class="ai-profile-img-wrap">
+          <img src="images/coach.jpg" alt="SPECTRE" class="rival-profile-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="ai-profile-placeholder" style="display:none;">&#9818;</div>
+        </div>
+        <div class="ai-profile-info">
+          <span class="ai-profile-name rival-name-display">SPECTRE</span>
+          <span class="ai-profile-elo rival-elo-display">~1800 ELO</span>
+        </div>
+      </div>
     </div>
-    <div class="captured-section" id="blackCapturedSection">
-      <h3>Black Captured <span id="materialBlack" class="material-advantage"></span></h3>
-      <div id="capturedBlack" class="captured-pieces"></div>
+
+    <div class="panel-widget ai-profile" id="puzzleCoachSection" style="display:none;">
+      <div class="ai-profile-body">
+        <div class="ai-profile-img-wrap">
+          <img src="images/coach.jpg" alt="SPECTRE" class="rival-profile-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="ai-profile-placeholder" style="display:none;">&#9818;</div>
+        </div>
+        <div class="ai-profile-info">
+          <span class="ai-profile-name rival-name-display">SPECTRE</span>
+          <span class="ai-profile-elo rival-elo-display">Puzzle Master</span>
+        </div>
+      </div>
+      <div class="coach-dialogue" id="coachDialogue">Think you can solve this?</div>
+    </div>
+
+    <div class="panel-widget capture-section" id="captureSection">
+      <div class="widget-header">
+        <span class="widget-title">CAPTURE</span>
+      </div>
+      <div class="capture-body">
+        <div class="capture-group">
+          <div class="capture-label">White taken <span id="materialWhite" class="material-advantage"></span></div>
+          <div id="capturedWhite" class="captured-pieces"></div>
+        </div>
+        <div class="capture-divider"></div>
+        <div class="capture-group">
+          <div class="capture-label">Black taken <span id="materialBlack" class="material-advantage"></span></div>
+          <div id="capturedBlack" class="captured-pieces"></div>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="center-section">
-    <div class="controls-top">
-      <div class="control-group" id="difficultyGroup">
-        <label>Difficulty:</label>
-        <select id="aiDifficulty" onchange="changeDifficulty()">
-          <option value="1" selected>Beginner (~500)</option>
-          <option value="2">Club (~1500)</option>
-          <option value="3">Master (~2500)</option>
-        </select>
-      </div>
-      <div class="control-group" id="timeControlGroup">
-        <label>Time:</label>
-        <select id="timeControl" onchange="changeTimeControl()">
-          <option value="0" selected>Unlimited</option>
-          <option value="180">Blitz 3+0</option>
-          <option value="600">Rapid 10+0</option>
-          <option value="1800">Classical 30+0</option>
-        </select>
+    <div class="controls-top" id="controlsTop">
+      <div class="control-group">
+        <span id="timeLabel" class="time-label-display" style="display:none;"></span>
       </div>
       <div class="control-group">
         <button onclick="showSettingsModal()" class="icon-btn" title="Settings">&#9881;</button>
@@ -99,7 +123,7 @@
 
     <div id="status"></div>
 
-    <div class="controls-bottom">
+    <div class="controls-bottom" id="controlsBottom">
       <button onclick="location.href='index.html'">&#8592; Menu</button>
       <button onclick="resetGame()">New Game</button>
       <button onclick="undoMove()">Undo</button>
@@ -108,30 +132,59 @@
 
     <div id="puzzleButtons" class="puzzle-buttons" style="display:none;">
       <button onclick="location.href='index.html'">&#8592; Menu</button>
+      <button onclick="location.href='puzzles.html'">Map</button>
       <button onclick="resetPuzzle()">Retry</button>
       <button onclick="showPuzzleHint()">Hint</button>
       <button onclick="nextPuzzle()">Next Puzzle</button>
-      <span class="puzzle-solved-count">Solved: <span id="puzzlesSolvedCount">0</span></span>
     </div>
   </div>
 
   <div class="side-panel right-panel">
-    <div class="timer-section">
+    <div class="panel-widget timer-section" id="timerSection">
       <div class="timer white-timer" id="whiteTimer">
         <span class="timer-label">WHITE</span>
         <span class="timer-display">10:00</span>
       </div>
     </div>
-    <div class="timer-section">
+    <div class="panel-widget timer-section" id="timerSection2">
       <div class="timer black-timer" id="blackTimer">
         <span class="timer-label">BLACK</span>
         <span class="timer-display">10:00</span>
       </div>
     </div>
-    <div class="move-history-section">
-      <h3>Move History</h3>
+    <div class="panel-widget move-history-section" id="moveHistorySection">
+      <div class="widget-header">
+        <span class="widget-title">MOVE HISTORY</span>
+      </div>
       <div id="moveHistory" class="move-history"></div>
     </div>
+
+    <a href="puzzles.html" class="panel-widget puzzle-progress-widget" id="puzzleProgressWidget" style="display:none; text-decoration: none;">
+      <div class="widget-header">
+        <span class="widget-title">PROGRESS</span>
+      </div>
+      <div class="puzzle-progress-body">
+        <div class="puzzle-progress-tier">
+          <span class="puzzle-progress-tier-name easy-color">Rookie</span>
+          <span class="puzzle-progress-tier-count" id="progressEasy">0/10</span>
+        </div>
+        <div class="puzzle-progress-bar-mini"><div class="puzzle-progress-bar-fill easy-fill" id="progressEasyBar"></div></div>
+        <div class="puzzle-progress-tier">
+          <span class="puzzle-progress-tier-name medium-color">Tactical</span>
+          <span class="puzzle-progress-tier-count" id="progressMedium">0/10</span>
+        </div>
+        <div class="puzzle-progress-bar-mini"><div class="puzzle-progress-bar-fill medium-fill" id="progressMediumBar"></div></div>
+        <div class="puzzle-progress-tier">
+          <span class="puzzle-progress-tier-name hard-color">Master</span>
+          <span class="puzzle-progress-tier-count" id="progressHard">0/10</span>
+        </div>
+        <div class="puzzle-progress-bar-mini"><div class="puzzle-progress-bar-fill hard-fill" id="progressHardBar"></div></div>
+        <div class="puzzle-progress-total">
+          <span id="progressTotal">0 / 30 solved</span>
+        </div>
+        <div class="puzzle-progress-link">View full map &rarr;</div>
+      </div>
+    </a>
   </div>
 </div>
 
@@ -169,6 +222,17 @@
   <div class="modal-content">
     <h2>Select Promotion</h2>
     <div id="promoPieces"></div>
+  </div>
+</div>
+
+<div id="puzzleCompleteModal" class="modal-overlay">
+  <div class="modal-content puzzle-complete-content">
+    <h2 id="puzzleCompleteTitle">Puzzle Solved!</h2>
+    <p id="puzzleCompleteMessage"></p>
+    <div class="puzzle-complete-buttons">
+      <button onclick="nextPuzzle(); hidePuzzleCompleteModal();">Next Puzzle</button>
+      <button onclick="location.href='puzzles.html'">Back to Map</button>
+    </div>
   </div>
 </div>
 

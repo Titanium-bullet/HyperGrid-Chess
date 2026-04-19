@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Explore More - HyperGrid Chess</title>
+  <title>Play - HyperGrid Chess</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -41,10 +42,7 @@
     body::after {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
       background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.5) 100%);
       pointer-events: none;
       z-index: 0;
@@ -62,6 +60,7 @@
       margin-bottom: 2.5rem;
       text-shadow: 0 0 30px rgba(233, 69, 96, 0.6), 0 0 60px rgba(233, 69, 96, 0.3);
       letter-spacing: 4px;
+      font-family: 'Orbitron', sans-serif;
       position: relative;
       z-index: 1;
       text-align: center;
@@ -96,7 +95,8 @@
 
     .explore-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 2fr 1fr;
+      grid-template-rows: 1fr 1fr;
       gap: 1.8rem;
       max-width: 780px;
       width: 100%;
@@ -123,16 +123,9 @@
       animation: cardEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    .explore-card:nth-child(1) { animation-delay: 1.8s; }
+    .explore-card:nth-child(1) { animation-delay: 1.8s; grid-row: span 2; }
     .explore-card:nth-child(2) { animation-delay: 2.0s; }
     .explore-card:nth-child(3) { animation-delay: 2.2s; }
-    .explore-card:nth-child(4) { animation-delay: 2.4s; }
-    .explore-card:nth-child(5) { animation-delay: 2.6s; }
-    .explore-card:nth-child(6) { animation-delay: 2.8s; }
-
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
 
     @keyframes cardEntry {
       0% {
@@ -150,15 +143,6 @@
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
     }
 
-    .explore-card.disabled {
-      cursor: default;
-    }
-
-    .explore-card.disabled:hover {
-      transform: none;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    }
-
     .card-image {
       height: 180px;
       width: 100%;
@@ -167,6 +151,11 @@
       justify-content: center;
       position: relative;
       overflow: hidden;
+    }
+
+    .explore-card.span-2x2 .card-image {
+      height: 100%;
+      flex: 1;
     }
 
     .card-image.cyan {
@@ -181,22 +170,11 @@
       background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(249, 202, 36, 0.25), rgba(200, 170, 0, 0.1));
     }
 
-    .card-image.red {
-      background: linear-gradient(135deg, rgba(233, 69, 96, 0.15), rgba(229, 57, 53, 0.25), rgba(200, 30, 50, 0.1));
-    }
-
-    .card-image.dim {
-      background: linear-gradient(135deg, rgba(60, 60, 80, 0.3), rgba(40, 40, 60, 0.4));
-    }
-
     .card-image::after {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: 
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
         linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
       background-size: 30px 30px;
@@ -213,7 +191,6 @@
     .card-image.cyan .card-icon { filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.5)); }
     .card-image.purple .card-icon { filter: drop-shadow(0 0 15px rgba(186, 85, 211, 0.5)); }
     .card-image.gold .card-icon { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.5)); }
-    .card-image.red .card-icon { filter: drop-shadow(0 0 15px rgba(233, 69, 96, 0.5)); }
 
     .card-label {
       padding: 1.2rem 1rem;
@@ -225,57 +202,37 @@
       border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .explore-card:not(.disabled) .card-label {
-      color: #fff;
-    }
-
-    .explore-card.disabled .card-label {
-      color: rgba(255, 255, 255, 0.35);
+    .card-sublabel {
+      display: block;
+      font-size: 0.7rem;
+      color: #888;
+      margin-top: 4px;
+      font-weight: 400;
+      letter-spacing: 1px;
     }
 
     .explore-card:not(.disabled) .card-image.cyan ~ .card-label { color: rgba(0, 255, 255, 0.9); }
     .explore-card:not(.disabled) .card-image.purple ~ .card-label { color: rgba(186, 85, 211, 0.9); }
     .explore-card:not(.disabled) .card-image.gold ~ .card-label { color: rgba(255, 215, 0, 0.9); }
 
-    .explore-card:not(.disabled):hover .card-image.cyan {
+    .explore-card:hover .card-image.cyan {
       box-shadow: inset 0 0 40px rgba(0, 255, 255, 0.15);
       border-bottom: 2px solid rgba(0, 255, 255, 0.4);
     }
-    .explore-card:not(.disabled):hover .card-image.purple {
+    .explore-card:hover .card-image.purple {
       box-shadow: inset 0 0 40px rgba(186, 85, 211, 0.15);
       border-bottom: 2px solid rgba(186, 85, 211, 0.4);
     }
-    .explore-card:not(.disabled):hover .card-image.gold {
+    .explore-card:hover .card-image.gold {
       box-shadow: inset 0 0 40px rgba(255, 215, 0, 0.15);
       border-bottom: 2px solid rgba(255, 215, 0, 0.4);
-    }
-    .explore-card:not(.disabled):hover .card-image.red {
-      box-shadow: inset 0 0 40px rgba(233, 69, 96, 0.15);
-      border-bottom: 2px solid rgba(233, 69, 96, 0.4);
-    }
-
-    .coming-soon-badge {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-12deg);
-      background: rgba(233, 69, 96, 0.85);
-      color: white;
-      padding: 0.4rem 1.2rem;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      border-radius: 4px;
-      z-index: 2;
-      box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
     }
 
     .back-btn {
       margin-top: 2.5rem;
       margin-bottom: 2rem;
       padding: 1rem 2.5rem;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 600;
       background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
       color: rgba(0, 255, 255, 0.9);
@@ -289,7 +246,11 @@
       position: relative;
       z-index: 1;
       opacity: 0;
-      animation: fadeIn 0.8s ease 3.2s forwards;
+      animation: fadeIn 0.8s ease 2.6s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
     }
 
     .back-btn:hover {
@@ -297,89 +258,57 @@
       background: rgba(0, 255, 255, 0.15);
       border-color: rgba(0, 255, 255, 0.8);
       box-shadow: 0 6px 25px rgba(0, 255, 255, 0.3);
-      color: #fff;
     }
 
     @media (max-width: 700px) {
       .explore-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.2rem;
-      }
-      h1 {
-        font-size: 2rem;
-      }
-      .card-image {
-        height: 140px;
-      }
-      .card-icon {
-        font-size: 3rem;
-      }
-    }
-
-    @media (max-width: 440px) {
-      .explore-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
+        grid-template-rows: auto;
+        gap: 1.2rem;
+        max-width: 320px;
       }
-      .card-image {
-        height: 130px;
+      .explore-card.span-2x2 {
+        grid-row: span 1;
       }
+      .explore-card.span-2x2 .card-image {
+        height: 140px;
+        flex: 0;
+      }
+      h1 { font-size: 2rem; }
+      .card-image { height: 140px; }
+      .card-icon { font-size: 3rem; }
     }
   </style>
 </head>
 <body>
   <canvas id="cyberCanvas"></canvas>
 
-  <h1>EXPLORE MORE</h1>
+  <h1>SELECT MODE</h1>
 
   <div class="explore-grid">
-    <a href="about-game.html" class="explore-card">
+    <a href="ai-select.html" class="explore-card span-2x2">
       <div class="card-image cyan">
-        <span class="card-icon">♟</span>
+        <span class="card-icon">&#9816;</span>
       </div>
-      <div class="card-label">About Game</div>
+      <div class="card-label">vs AI<span class="card-sublabel">Challenge the machine</span></div>
     </a>
 
-    <a href="about-dev.html" class="explore-card">
+    <a href="play-time.html?mode=pvp" class="explore-card">
       <div class="card-image purple">
-        <span class="card-icon">👤</span>
+        <span class="card-icon">&#9815;&#9816;</span>
       </div>
-      <div class="card-label">About Developer</div>
+      <div class="card-label">Two Player<span class="card-sublabel">Local multiplayer</span></div>
     </a>
 
-    <a href="achievements.html" class="explore-card">
+    <a href="puzzles.html" class="explore-card">
       <div class="card-image gold">
-        <span class="card-icon">🏆</span>
+        <span class="card-icon">&#x1F9E9;</span>
       </div>
-      <div class="card-label">Player Achievement</div>
+      <div class="card-label">Puzzle Academy<span class="card-sublabel">Train your tactics</span></div>
     </a>
-
-    <div class="explore-card disabled">
-      <div class="card-image red">
-        <span class="card-icon">🎲</span>
-        <span class="coming-soon-badge">Coming Soon</span>
-      </div>
-      <div class="card-label">3D Chess Beta</div>
-    </div>
-
-    <div class="explore-card disabled">
-      <div class="card-image dim">
-        <span class="card-icon">✦</span>
-        <span class="coming-soon-badge">Coming Soon</span>
-      </div>
-      <div class="card-label">Coming Soon</div>
-    </div>
-
-    <div class="explore-card disabled">
-      <div class="card-image red">
-        <span class="card-icon">⚡</span>
-        <span class="coming-soon-badge">Coming Soon</span>
-      </div>
-      <div class="card-label">Play Online</div>
-    </div>
   </div>
 
-  <a href="index.html" class="back-btn">← Back to Menu</a>
+  <a href="index.html" class="back-btn">&larr; Menu</a>
 
   <script>window.HYPERGRID_SKIP_INTRO = true;</script>
   <script src="background.js"></script>

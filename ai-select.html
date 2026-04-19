@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Opponent - HyperGrid Chess</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background: #0a0a14;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+      padding: 2rem;
+      padding-top: 3rem;
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    #cyberCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.5) 100%);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      animation: vignetteFadeIn 1s ease 3s forwards;
+    }
+
+    @keyframes vignetteFadeIn {
+      to { opacity: 1; }
+    }
+
+    h1 {
+      color: #e94560;
+      font-size: 2.4rem;
+      margin-bottom: 2rem;
+      text-shadow: 0 0 30px rgba(233, 69, 96, 0.6), 0 0 60px rgba(233, 69, 96, 0.3);
+      letter-spacing: 4px;
+      font-family: 'Orbitron', sans-serif;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      opacity: 0;
+      animation: titleEntry 1.2s cubic-bezier(0.16, 1, 0.3, 1) 1.5s forwards,
+                 titleGlow 3s ease-in-out 2.7s infinite alternate;
+    }
+
+    @keyframes titleEntry {
+      0% {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.8);
+        letter-spacing: 20px;
+      }
+      60% {
+        opacity: 1;
+        transform: translateY(5px) scale(1.02);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        letter-spacing: 4px;
+      }
+    }
+
+    @keyframes titleGlow {
+      0% { text-shadow: 0 0 30px rgba(233, 69, 96, 0.6), 0 0 60px rgba(233, 69, 96, 0.3); }
+      100% { text-shadow: 0 0 40px rgba(233, 69, 96, 0.8), 0 0 80px rgba(233, 69, 96, 0.5); }
+    }
+
+    .ai-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      max-width: 560px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    .ai-card {
+      background: linear-gradient(145deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9));
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      cursor: pointer;
+      text-decoration: none;
+      color: white;
+      transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      animation: cardEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .ai-card:nth-child(1) { animation-delay: 1.8s; }
+    .ai-card:nth-child(2) { animation-delay: 2.0s; }
+    .ai-card:nth-child(3) { animation-delay: 2.2s; }
+    .ai-card:nth-child(4) { animation-delay: 2.4s; }
+
+    @keyframes cardEntry {
+      0% { opacity: 0; transform: translateY(30px) scale(0.9); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .ai-card:hover {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .ai-card-image {
+      height: 200px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .ai-card-image::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(transparent, rgba(26, 26, 46, 0.95));
+      pointer-events: none;
+    }
+
+    .ai-card-image.diff1 {
+      border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+    }
+    .ai-card-image.diff2 {
+      border-bottom: 2px solid rgba(249, 202, 36, 0.3);
+    }
+    .ai-card-image.diff3 {
+      border-bottom: 2px solid rgba(233, 69, 96, 0.3);
+    }
+    .ai-card-image.diff4 {
+      border-bottom: 2px solid rgba(186, 85, 211, 0.3);
+    }
+
+    .ai-card:hover .ai-card-image.diff1 { border-bottom-color: rgba(0, 255, 255, 0.7); box-shadow: inset 0 0 40px rgba(0, 255, 255, 0.1); }
+    .ai-card:hover .ai-card-image.diff2 { border-bottom-color: rgba(249, 202, 36, 0.7); box-shadow: inset 0 0 40px rgba(249, 202, 36, 0.1); }
+    .ai-card:hover .ai-card-image.diff3 { border-bottom-color: rgba(233, 69, 96, 0.7); box-shadow: inset 0 0 40px rgba(233, 69, 96, 0.1); }
+    .ai-card:hover .ai-card-image.diff4 { border-bottom-color: rgba(186, 85, 211, 0.7); box-shadow: inset 0 0 40px rgba(186, 85, 211, 0.1); }
+
+    .ai-card-info {
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .ai-card-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .ai-card.diff1 .ai-card-name { color: rgba(0, 255, 255, 0.9); }
+    .ai-card.diff2 .ai-card-name { color: rgba(249, 202, 36, 0.9); }
+    .ai-card.diff3 .ai-card-name { color: rgba(233, 69, 96, 0.9); }
+    .ai-card.diff4 .ai-card-name { color: rgba(186, 85, 211, 0.9); }
+
+    .ai-card-elo {
+      font-size: 0.75rem;
+      color: #888;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    .back-btn {
+      margin-top: 2.5rem;
+      margin-bottom: 2rem;
+      padding: 1rem 2.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+      color: rgba(0, 255, 255, 0.9);
+      border: 1px solid rgba(0, 255, 255, 0.4);
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: fadeIn 0.8s ease 2.8s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .back-btn:hover {
+      transform: translateY(-3px);
+      background: rgba(0, 255, 255, 0.15);
+      border-color: rgba(0, 255, 255, 0.8);
+      box-shadow: 0 6px 25px rgba(0, 255, 255, 0.3);
+    }
+
+    @media (max-width: 600px) {
+      .ai-grid {
+        grid-template-columns: 1fr;
+        max-width: 280px;
+      }
+      h1 { font-size: 1.8rem; }
+      .ai-card-image { height: 160px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="cyberCanvas"></canvas>
+
+  <h1>CHOOSE YOUR OPPONENT</h1>
+
+  <div class="ai-grid">
+    <a href="play-time.html?mode=ai&diff=1" class="ai-card diff1">
+      <div class="ai-card-image diff1">
+        <img src="images/beginner.jpg" alt="Nova">
+      </div>
+      <div class="ai-card-info">
+        <div class="ai-card-name">Nova</div>
+        <div class="ai-card-elo">~600 ELO</div>
+      </div>
+    </a>
+
+    <a href="play-time.html?mode=ai&diff=2" class="ai-card diff2">
+      <div class="ai-card-image diff2">
+        <img src="images/medium1.jpg" alt="Phantom">
+      </div>
+      <div class="ai-card-info">
+        <div class="ai-card-name">Phantom</div>
+        <div class="ai-card-elo">~1400 ELO</div>
+      </div>
+    </a>
+
+    <a href="play-time.html?mode=ai&diff=3" class="ai-card diff3">
+      <div class="ai-card-image diff3">
+        <img src="images/medium2.jpg" alt="Overlord">
+      </div>
+      <div class="ai-card-info">
+        <div class="ai-card-name">Overlord</div>
+        <div class="ai-card-elo">~1800 ELO</div>
+      </div>
+    </a>
+
+    <a href="play-time.html?mode=ai&diff=4" class="ai-card diff4">
+      <div class="ai-card-image diff4">
+        <img src="images/master.jpg" alt="HyperGrid">
+      </div>
+      <div class="ai-card-info">
+        <div class="ai-card-name">HyperGrid</div>
+        <div class="ai-card-elo">3000+ ELO</div>
+      </div>
+    </a>
+  </div>
+
+  <a href="play.html" class="back-btn">&larr; Back</a>
+
+  <script>window.HYPERGRID_SKIP_INTRO = true;</script>
+  <script src="background.js"></script>
+</body>
+</html>
