@@ -179,18 +179,27 @@
         linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
       background-size: 30px 30px;
       pointer-events: none;
-    }
-
-    .card-icon {
-      font-size: 4rem;
-      opacity: 0.7;
-      text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
       z-index: 1;
     }
 
-    .card-image.cyan .card-icon { filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.5)); }
-    .card-image.purple .card-icon { filter: drop-shadow(0 0 15px rgba(186, 85, 211, 0.5)); }
-    .card-image.gold .card-icon { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.5)); }
+    .card-image::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(transparent, rgba(26, 26, 46, 0.95));
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
     .card-label {
       padding: 1.2rem 1rem;
@@ -288,21 +297,21 @@
   <div class="explore-grid">
     <a href="ai-select.html" class="explore-card span-2x2">
       <div class="card-image cyan">
-        <span class="card-icon">&#9816;</span>
+        <img src="images/vsai.jpg" alt="vs AI">
       </div>
       <div class="card-label">vs AI<span class="card-sublabel">Challenge the machine</span></div>
     </a>
 
     <a href="play-time.html?mode=pvp" class="explore-card">
       <div class="card-image purple">
-        <span class="card-icon">&#9815;&#9816;</span>
+        <img src="images/2players.jpg" alt="Two Player">
       </div>
       <div class="card-label">Two Player<span class="card-sublabel">Local multiplayer</span></div>
     </a>
 
     <a href="puzzles.html" class="explore-card">
       <div class="card-image gold">
-        <span class="card-icon">&#x1F9E9;</span>
+        <img src="images/puzzle.jpg" alt="Puzzle Academy">
       </div>
       <div class="card-label">Puzzle Academy<span class="card-sublabel">Train your tactics</span></div>
     </a>
