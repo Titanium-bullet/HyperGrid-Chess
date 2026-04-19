@@ -1,0 +1,64 @@
+- generic [active] [ref=e1]:
+  - heading "HYPERGRID CHESS ♟️" [level=1] [ref=e2]
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "Captured (White)" [level=3] [ref=e6]
+      - generic [ref=e9]:
+        - generic [ref=e10]: WHITE
+        - generic [ref=e11]: 10:00
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - generic [ref=e15]: "Mode:"
+          - combobox [ref=e16] [cursor=pointer]:
+            - option "vs AI" [selected]
+            - option "Two Player"
+        - generic [ref=e17]:
+          - generic [ref=e18]: "Difficulty:"
+          - combobox [ref=e19] [cursor=pointer]:
+            - option "Rookie"
+            - option "Casual" [selected]
+            - option "Club Player"
+            - option "Expert"
+            - option "Grandmaster"
+        - generic [ref=e20]:
+          - generic [ref=e21]: "Time:"
+          - combobox [ref=e22] [cursor=pointer]:
+            - option "Unlimited"
+            - option "Blitz 3+0"
+            - option "Rapid 10+0" [selected]
+            - option "Classical 30+0"
+        - button "⚙️" [ref=e24] [cursor=pointer]
+      - generic [ref=e27]:
+        - generic [ref=e136]: "8"
+        - generic [ref=e146]: "7"
+        - generic [ref=e156]: "6"
+        - generic [ref=e166]: "5"
+        - generic [ref=e176]: "4"
+        - generic [ref=e186]: "3"
+        - generic [ref=e196]: "2"
+        - generic [ref=e204]:
+          - generic [ref=e205]:
+            - generic [ref=e206]: a
+            - generic [ref=e207]: "1"
+          - generic [ref=e209]: b
+          - generic [ref=e211]: c
+          - generic [ref=e213]: d
+          - generic [ref=e215]: e
+          - generic [ref=e217]: f
+          - generic [ref=e219]: g
+          - generic [ref=e221]: h
+      - generic [ref=e116]:
+        - button "← Menu" [ref=e117] [cursor=pointer]
+        - button "New Game" [ref=e118] [cursor=pointer]
+        - button "Undo" [ref=e119] [cursor=pointer]
+        - button "Flip Board" [ref=e120] [cursor=pointer]
+        - button "Save" [ref=e121] [cursor=pointer]
+        - button "Load" [ref=e122] [cursor=pointer]
+      - generic [ref=e123]: White's turn
+    - generic [ref=e124]:
+      - generic [ref=e126]:
+        - generic [ref=e127]: BLACK
+        - generic [ref=e128]: 10:00
+      - heading "Captured (Black)" [level=3] [ref=e130]
+      - heading "Move History" [level=3] [ref=e133]

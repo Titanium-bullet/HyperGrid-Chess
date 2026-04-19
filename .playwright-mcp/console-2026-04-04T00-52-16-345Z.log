@@ -1,0 +1,2 @@
+[     137ms] [LOG] Fetching Stockfish from CDN... @ http://localhost:8765/game.js:531
+[     153ms] [LOG] Stockfish Web Worker loaded successfully! @ http://localhost:8765/game.js:546
