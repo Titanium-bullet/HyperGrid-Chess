@@ -207,12 +207,54 @@
       margin-top: 4px;
       letter-spacing: 1px;
     }
+
+    .shop-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,215,0,0.05));
+      border: 1px solid rgba(255,215,0,0.4);
+      border-radius: 25px;
+      color: #ffd700;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+      opacity: 0;
+      animation: fadeIn 0.8s ease 2.5s forwards;
+    }
+
+    .shop-btn:hover {
+      transform: translateY(-2px);
+      background: rgba(255,215,0,0.2);
+      border-color: rgba(255,215,0,0.8);
+      box-shadow: 0 4px 15px rgba(255,215,0,0.3);
+    }
+
+    .shop-btn .shop-icon { font-size: 1.2rem; }
+
+    .shop-btn .coin-count {
+      font-weight: 700;
+    }
+
+    @keyframes fadeIn { to { opacity: 1; } }
   </style>
 </head>
 <body>
   <canvas id="cyberCanvas"></canvas>
 
   <h1>HYPERGRID CHESS</h1>
+
+  <a href="shop.html" class="shop-btn">
+    <span class="shop-icon">&#x1F6D2;</span>
+    <span class="coin-count" id="menuCoins">0</span>
+  </a>
   
   <div class="menu-container">
     <a href="play.html" class="menu-btn primary">
@@ -220,10 +262,10 @@
       <span class="subtitle">Play now</span>
     </a>
     
-    <div class="menu-btn disabled">
-      Checkers
-      <span class="subtitle">Coming soon</span>
-    </div>
+    <a class="menu-btn secondary" onclick="testAchievements()" style="cursor:pointer">
+      Test Achievements
+      <span class="subtitle">Bronze &rarr; Silver &rarr; Gold</span>
+    </a>
     
     <div class="menu-btn disabled">
       Gomoku
@@ -236,6 +278,26 @@
     </a>
   </div>
 
+  <script src="shop.js"></script>
+  <script src="achievements.js"></script>
   <script src="background.js"></script>
+  <script>
+    (function () {
+      var coinEl = document.getElementById('menuCoins');
+      if (coinEl && typeof ShopSystem !== 'undefined') {
+        coinEl.textContent = ShopSystem.getCoins();
+      }
+    })();
+
+    function testAchievements() {
+      AchievementTracker.showToast('First Blood', 'Bronze', '\u2694');
+      setTimeout(function() {
+        AchievementTracker.showToast('Nova Slayer', 'Silver', '\uD83C\uDF1F');
+      }, 1200);
+      setTimeout(function() {
+        AchievementTracker.showToast('HyperGrid Slayer', 'Gold', '\uD83D\uDD25');
+      }, 2400);
+    }
+  </script>
 </body>
 </html>

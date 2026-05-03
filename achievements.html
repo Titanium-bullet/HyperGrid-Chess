@@ -94,19 +94,11 @@
       100% { text-shadow: 0 0 40px rgba(233, 69, 96, 0.8), 0 0 80px rgba(233, 69, 96, 0.5), 0 0 100px rgba(233, 69, 96, 0.2); }
     }
 
-    .content-container {
-      max-width: 650px;
+    .page-container {
+      max-width: 900px;
       width: 100%;
-      background: linear-gradient(145deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9));
-      border-radius: 15px;
-      padding: 2.5rem;
-      line-height: 1.8;
       position: relative;
       z-index: 1;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 215, 0, 0.3);
-      box-shadow: 0 0 30px rgba(255, 215, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.4);
-      text-align: center;
       opacity: 0;
       animation: fadeIn 0.8s ease 2s forwards;
     }
@@ -115,25 +107,294 @@
       to { opacity: 1; }
     }
 
-    .content-container h2 {
-      color: rgba(255, 215, 0, 0.9);
-      margin-bottom: 1.5rem;
-      font-size: 1.5rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+    .stats-section {
+      background: linear-gradient(145deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9));
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 255, 0.2);
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.05), 0 8px 32px rgba(0, 0, 0, 0.4);
     }
 
-    .content-container p {
-      margin-bottom: 1rem;
-      font-size: 1rem;
+    .stats-section h2 {
+      color: rgba(0, 255, 255, 0.9);
+      font-size: 1.2rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat-card {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 1rem 0.75rem;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: border-color 0.3s;
+    }
+
+    .stat-card:hover {
+      border-color: rgba(0, 255, 255, 0.3);
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #4ecdc4;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .progress-section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .progress-bar-container {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      height: 24px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #cd7f32, #c0c0c0, #ffd700);
+      transition: width 0.6s ease;
+      position: relative;
+    }
+
+    .progress-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .progress-text span:last-child {
+      color: #ffd700;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(0, 255, 255, 0.2);
+    }
+
+    .filter-tab {
+      flex: 1;
+      padding: 0.7rem 0.5rem;
+      background: rgba(26, 26, 46, 0.8);
+      border: none;
+      color: #888;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: inherit;
+      border-right: 1px solid rgba(0, 255, 255, 0.1);
+    }
+
+    .filter-tab:last-child {
+      border-right: none;
+    }
+
+    .filter-tab:hover {
+      background: rgba(0, 255, 255, 0.1);
       color: #ccc;
     }
 
-    .placeholder-icon {
-      font-size: 4rem;
-      margin-bottom: 1.5rem;
-      display: block;
-      filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+    .filter-tab.active {
+      background: rgba(0, 255, 255, 0.15);
+      color: #4ecdc4;
+      box-shadow: inset 0 -2px 0 #4ecdc4;
+    }
+
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .achievement-card {
+      background: linear-gradient(145deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9));
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      opacity: 0.45;
+      filter: grayscale(0.5);
+    }
+
+    .achievement-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 255, 255, 0.3);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .achievement-card.locked .ach-icon {
+      filter: grayscale(1);
+    }
+
+    .achievement-card.level-bronze,
+    .achievement-card.level-silver,
+    .achievement-card.level-gold {
+      opacity: 1;
+      filter: none;
+    }
+
+    .achievement-card.level-bronze {
+      border: 2px solid rgba(205, 127, 50, 0.75);
+      box-shadow: 0 0 25px rgba(205, 127, 50, 0.15);
+    }
+
+    .achievement-card.level-silver {
+      border: 2px solid rgba(192, 192, 192, 0.75);
+      box-shadow: 0 0 25px rgba(192, 192, 192, 0.15);
+    }
+
+    .achievement-card.level-gold {
+      border: 2px solid rgba(255, 215, 0, 0.85);
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+    }
+
+    .achievement-card.level-gold::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #ffd700, transparent);
+    }
+
+    .ach-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .ach-icon {
+      font-size: 1.8rem;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .ach-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ach-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #eee;
+      margin-bottom: 0.15rem;
+    }
+
+    .ach-desc {
+      font-size: 0.75rem;
+      color: #888;
+    }
+
+    .ach-tiers {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .ach-tier-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      background: transparent;
+      transition: all 0.3s;
+    }
+
+    .ach-tier-dot.bronze { border-color: #cd7f32; }
+    .ach-tier-dot.silver { border-color: #c0c0c0; }
+    .ach-tier-dot.gold { border-color: #ffd700; }
+
+    .ach-tier-dot.filled {
+      border: none;
+    }
+
+    .ach-tier-dot.filled.bronze { background: #cd7f32; box-shadow: 0 0 8px rgba(205, 127, 50, 0.6); }
+    .ach-tier-dot.filled.silver { background: #c0c0c0; box-shadow: 0 0 8px rgba(192, 192, 192, 0.6); }
+    .ach-tier-dot.filled.gold { background: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
+
+    .ach-progress {
+      height: 4px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .ach-progress-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: #4ecdc4;
+      transition: width 0.4s ease;
+    }
+
+    .ach-progress-fill.bronze-fill { background: #cd7f32; }
+    .ach-progress-fill.silver-fill { background: #c0c0c0; }
+    .ach-progress-fill.gold-fill { background: #ffd700; }
+
+    .ach-next {
+      font-size: 0.7rem;
+      color: #666;
+      margin-top: 0.4rem;
+      text-align: right;
     }
 
     .back-btn {
@@ -159,10 +420,157 @@
 
     .back-btn:hover {
       transform: translateY(-3px);
-      background: rgba(0, 255, 255, 0.15);
-      border-color: rgba(0, 255, 255, 0.8);
-      box-shadow: 0 6px 25px rgba(0, 255, 255, 0.3);
       color: #fff;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.08));
+      border-color: rgba(0, 255, 255, 0.6);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.15);
+    }
+
+    .primary-btn:hover {
+      background: rgba(0, 255, 255, 0.25);
+      border-color: rgba(0, 255, 255, 0.9);
+      box-shadow: 0 6px 25px rgba(0, 255, 255, 0.3);
+    }
+
+    .secondary-btn {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+      color: rgba(255, 255, 255, 0.5);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .secondary-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #ccc;
+    }
+
+    .reset-btn {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.5rem 1.5rem;
+      font-size: 0.8rem;
+      background: rgba(233, 69, 96, 0.1);
+      color: rgba(233, 69, 96, 0.7);
+      border: 1px solid rgba(233, 69, 96, 0.3);
+      border-radius: 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+    }
+
+    .reset-btn:hover {
+      background: rgba(233, 69, 96, 0.2);
+      border-color: rgba(233, 69, 96, 0.6);
+      color: #e94560;
+    }
+
+    .reset-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .reset-modal-overlay.show {
+      display: flex;
+    }
+
+    .reset-modal {
+      background: linear-gradient(145deg, rgba(26, 26, 46, 0.98), rgba(22, 33, 62, 0.98));
+      border-radius: 16px;
+      padding: 2.5rem;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      border: 1px solid rgba(233, 69, 96, 0.4);
+      box-shadow: 0 0 40px rgba(233, 69, 96, 0.15), 0 12px 40px rgba(0, 0, 0, 0.5);
+      animation: modalIn 0.3s ease;
+    }
+
+    @keyframes modalIn {
+      0% { opacity: 0; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .reset-modal-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .reset-modal h3 {
+      color: #e94560;
+      font-size: 1.3rem;
+      margin-bottom: 0.75rem;
+      letter-spacing: 1px;
+    }
+
+    .reset-modal p {
+      color: #aaa;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    .reset-modal-btns {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .reset-modal-btns button {
+      padding: 0.7rem 1.8rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+      font-family: inherit;
+      border: none;
+    }
+
+    .reset-cancel-btn {
+      background: rgba(255, 255, 255, 0.05);
+      color: #aaa;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .reset-cancel-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .reset-confirm-btn {
+      background: rgba(233, 69, 96, 0.2);
+      color: #e94560;
+      border: 1px solid rgba(233, 69, 96, 0.4) !important;
+    }
+
+    .reset-confirm-btn:hover {
+      background: rgba(233, 69, 96, 0.35);
+      box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 1rem; padding-top: 2rem; }
+      h1 { font-size: 1.6rem; letter-spacing: 2px; }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+      .achievements-grid { grid-template-columns: 1fr; }
+      .stat-value { font-size: 1.3rem; }
+      .filter-tab { font-size: 0.65rem; padding: 0.5rem 0.25rem; }
     }
   </style>
 </head>
@@ -171,15 +579,260 @@
 
   <h1>PLAYER ACHIEVEMENT</h1>
 
-  <div class="content-container">
-    <span class="placeholder-icon">🏆</span>
-    <h2>Achievements</h2>
-    <p>This page is under construction. Check back soon to track your chess achievements and milestones!</p>
+  <div class="page-container">
+    <div class="stats-section">
+      <h2>Player Statistics</h2>
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="progress-section">
+        <div class="progress-text">
+          <span>Achievement Progress</span>
+          <span id="progressLabel">0 / 0</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" data-category="all">All</button>
+      <button class="filter-tab" data-category="victories">Victories</button>
+      <button class="filter-tab" data-category="puzzles">Puzzles</button>
+      <button class="filter-tab" data-category="trial">Trial</button>
+      <button class="filter-tab" data-category="moves">Moves</button>
+      <button class="filter-tab" data-category="challenges">Challenges</button>
+      <button class="filter-tab" data-category="stats">Stats</button>
+    </div>
+
+    <div class="achievements-grid" id="achievementsGrid"></div>
+
+    <div style="text-align: center;">
+      <button class="reset-btn" id="resetBtn">Reset All Progress</button>
+    </div>
   </div>
 
-  <a href="about.html" class="back-btn">← Back to Explore</a>
+  <div class="reset-modal-overlay" id="resetModal">
+    <div class="reset-modal">
+      <span class="reset-modal-icon">&#9888;</span>
+      <h3>Reset All Progress?</h3>
+      <p>This will permanently erase all achievements, stats, and puzzle history. This cannot be undone.</p>
+      <div class="reset-modal-btns">
+        <button class="reset-cancel-btn" id="resetCancelBtn">Cancel</button>
+        <button class="reset-confirm-btn" id="resetConfirmBtn">Reset Everything</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 1rem; position: relative; z-index: 1; opacity: 0; animation: fadeIn 0.8s ease 2.5s forwards;">
+    <a href="index.html" class="back-btn primary-btn">&larr; Main Menu</a>
+    <a href="about.html" class="back-btn secondary-btn">&larr; Explore</a>
+  </div>
 
   <script>window.HYPERGRID_SKIP_INTRO = true;</script>
+  <script src="achievements.js"></script>
+  <script>
+    (function () {
+      var defs = AchievementTracker.getDefinitions();
+      var stats = AchievementTracker.getStats();
+      stats = AchievementTracker.enrichStatsWithPuzzles(stats);
+      var state = AchievementTracker.getState();
+
+      var currentFilter = 'all';
+
+      function renderStats() {
+        var grid = document.getElementById('statsGrid');
+        var winRate = stats.gamesPlayed > 0 ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
+        var playTime = stats.totalPlayTimeSeconds || 0;
+        var timeStr = '';
+        if (playTime >= 3600) timeStr = Math.floor(playTime / 3600) + 'h ' + Math.floor((playTime % 3600) / 60) + 'm';
+        else if (playTime >= 60) timeStr = Math.floor(playTime / 60) + 'm';
+        else timeStr = playTime + 's';
+
+        var medalCounts = { bronze: 0, silver: 0, gold: 0 };
+        var mkeys = Object.keys(defs);
+        for (var m = 0; m < mkeys.length; m++) {
+          var aState = state[mkeys[m]];
+          if (aState && aState.level >= 1) medalCounts.bronze++;
+          if (aState && aState.level >= 2) medalCounts.silver++;
+          if (aState && aState.level >= 3) medalCounts.gold++;
+        }
+
+        var items = [
+          { value: stats.gamesPlayed, label: 'Games Played' },
+          { value: stats.gamesWon, label: 'Wins' },
+          { value: stats.gamesLost, label: 'Losses' },
+          { value: stats.gamesDrawn, label: 'Draws' },
+          { value: winRate + '%', label: 'Win Rate' },
+          { value: stats.bestWinStreak, label: 'Best Streak' },
+          { value: stats.puzzlesSolved + '/30', label: 'Puzzles Solved' },
+          { value: stats.totalMoves, label: 'Total Moves' },
+          { value: timeStr, label: 'Play Time' },
+          { value: medalCounts.bronze + medalCounts.silver + medalCounts.gold, label: 'Medals Earned' }
+        ];
+
+        grid.innerHTML = '';
+        for (var i = 0; i < items.length; i++) {
+          var card = document.createElement('div');
+          card.className = 'stat-card';
+          if (items[i].isHtml) {
+            card.innerHTML = '<span class="stat-value">' + items[i].value + '</span><span class="stat-label">' + items[i].label + '</span>';
+          } else {
+            card.innerHTML = '<span class="stat-value">' + items[i].value + '</span><span class="stat-label">' + items[i].label + '</span>';
+          }
+          grid.appendChild(card);
+        }
+      }
+
+      function renderProgress() {
+        var total = 0;
+        var unlocked = 0;
+        var goldCount = 0;
+        var keys = Object.keys(defs);
+        for (var i = 0; i < keys.length; i++) {
+          total++;
+          var a = state[keys[i]];
+          if (a && a.level > 0) unlocked++;
+          if (a && a.level >= 3) goldCount++;
+        }
+
+        var pct = total > 0 ? Math.round((goldCount / total) * 100) : 0;
+        document.getElementById('progressLabel').textContent = unlocked + ' unlocked, ' + goldCount + ' gold / ' + total;
+        document.getElementById('progressBarFill').style.width = pct + '%';
+      }
+
+      function renderAchievements() {
+        var grid = document.getElementById('achievementsGrid');
+        grid.innerHTML = '';
+
+        var keys = Object.keys(defs);
+        for (var i = 0; i < keys.length; i++) {
+          var id = keys[i];
+          var def = defs[id];
+
+          if (currentFilter !== 'all' && def.category !== currentFilter) continue;
+
+          var aState = state[id] || { level: 0, unlockedAt: [] };
+          var level = aState.level || 0;
+
+          var val = def.getValue(stats);
+          if (def.customLevel) {
+            val = def.customLevel(stats);
+            var clevel = def.customLevel(stats);
+          }
+
+          var card = document.createElement('div');
+          card.className = 'achievement-card';
+          if (level === 0) card.classList.add('locked');
+          if (level === 1) card.classList.add('level-bronze');
+          if (level === 2) card.classList.add('level-silver');
+          if (level === 3) card.classList.add('level-gold');
+
+          var tierDots = '';
+          var tierClasses = ['bronze', 'silver', 'gold'];
+          for (var t = 0; t < 3; t++) {
+            var filled = level > t ? ' filled' : '';
+            tierDots += '<div class="ach-tier-dot ' + tierClasses[t] + filled + '"></div>';
+          }
+
+          var progressPct = 0;
+          var nextDesc = '';
+          var fillClass = '';
+          if (level === 0) {
+            var thresh = def.tiers[0].threshold;
+            var curVal = def.getValue(stats);
+            progressPct = Math.min(100, Math.round((curVal / thresh) * 100));
+            nextDesc = def.bronzeOverride || (thresh + ' to unlock Bronze');
+            fillClass = 'bronze-fill';
+          } else if (level === 1) {
+            var thresh2 = def.tiers[1].threshold;
+            var curVal2 = def.getValue(stats);
+            if (def.silverOverride) {
+              progressPct = 0;
+              nextDesc = def.silverOverride;
+            } else {
+              progressPct = Math.min(100, Math.round((curVal2 / thresh2) * 100));
+              nextDesc = thresh2 + ' for Silver';
+            }
+            fillClass = 'silver-fill';
+          } else if (level === 2) {
+            if (def.goldOverride) {
+              var extraMet = def.getExtra ? def.getExtra(stats).goldMet : false;
+              progressPct = extraMet ? 100 : 0;
+              nextDesc = def.goldOverride;
+            } else {
+              var thresh3 = def.tiers[2].threshold;
+              var curVal3 = def.getValue(stats);
+              progressPct = Math.min(100, Math.round((curVal3 / thresh3) * 100));
+              nextDesc = thresh3 + ' for Gold';
+            }
+            fillClass = 'gold-fill';
+          } else {
+            progressPct = 100;
+            nextDesc = 'Completed!';
+          }
+
+          var formatFn = def.formatValue ? def.formatValue : null;
+          var displayVal = '';
+          if (level < 3) {
+            var rawVal = def.getValue(stats);
+            displayVal = formatFn ? formatFn(rawVal) : rawVal;
+          }
+
+          card.innerHTML =
+            '<div class="ach-header">' +
+              '<div class="ach-icon">' + def.icon + '</div>' +
+              '<div class="ach-info">' +
+                '<div class="ach-name">' + def.name + '</div>' +
+                '<div class="ach-desc">' + def.description + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="ach-tiers">' + tierDots + '</div>' +
+            '<div class="ach-progress"><div class="ach-progress-fill ' + fillClass + '" style="width:' + progressPct + '%"></div></div>' +
+            '<div class="ach-next">' + nextDesc + '</div>';
+
+          grid.appendChild(card);
+        }
+      }
+
+      document.getElementById('filterTabs').addEventListener('click', function (e) {
+        if (!e.target.classList.contains('filter-tab')) return;
+        var tabs = document.querySelectorAll('.filter-tab');
+        for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+        e.target.classList.add('active');
+        currentFilter = e.target.getAttribute('data-category');
+        renderAchievements();
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', function () {
+        document.getElementById('resetModal').classList.add('show');
+      });
+
+      document.getElementById('resetCancelBtn').addEventListener('click', function () {
+        document.getElementById('resetModal').classList.remove('show');
+      });
+
+      document.getElementById('resetConfirmBtn').addEventListener('click', function () {
+        localStorage.removeItem('hypergrid_stats');
+        localStorage.removeItem('hypergrid_achievements');
+        localStorage.removeItem('hypergrid_solved');
+        localStorage.removeItem('hypergrid_solved_no_hint');
+        localStorage.removeItem('hypergrid_trial_unlocked');
+        localStorage.removeItem('hypergrid_coins');
+        localStorage.removeItem('hypergrid_inventory');
+        location.reload();
+      });
+
+      document.getElementById('resetModal').addEventListener('click', function (e) {
+        if (e.target === this) {
+          this.classList.remove('show');
+        }
+      });
+
+      renderStats();
+      renderProgress();
+      renderAchievements();
+    })();
+  </script>
   <script src="background.js"></script>
 </body>
 </html>

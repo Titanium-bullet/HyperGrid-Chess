@@ -93,9 +93,9 @@
 
     .ai-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 1.5rem;
-      max-width: 900px;
+      max-width: 1125px;
       width: 100%;
       position: relative;
       z-index: 1;
@@ -124,6 +124,7 @@
     .ai-card:nth-child(2) { animation-delay: 2.0s; }
     .ai-card:nth-child(3) { animation-delay: 2.2s; }
     .ai-card:nth-child(4) { animation-delay: 2.4s; }
+    .ai-card:nth-child(5) { animation-delay: 2.6s; }
 
     @keyframes cardEntry {
       0% { opacity: 0; transform: translateY(30px) scale(0.9); }
@@ -175,11 +176,15 @@
     .ai-card-image.diff4 {
       border-bottom: 2px solid rgba(186, 85, 211, 0.3);
     }
+    .ai-card-image.diff5 {
+      border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+    }
 
     .ai-card:hover .ai-card-image.diff1 { border-bottom-color: rgba(0, 255, 255, 0.7); box-shadow: inset 0 0 40px rgba(0, 255, 255, 0.1); }
     .ai-card:hover .ai-card-image.diff2 { border-bottom-color: rgba(249, 202, 36, 0.7); box-shadow: inset 0 0 40px rgba(249, 202, 36, 0.1); }
     .ai-card:hover .ai-card-image.diff3 { border-bottom-color: rgba(233, 69, 96, 0.7); box-shadow: inset 0 0 40px rgba(233, 69, 96, 0.1); }
     .ai-card:hover .ai-card-image.diff4 { border-bottom-color: rgba(186, 85, 211, 0.7); box-shadow: inset 0 0 40px rgba(186, 85, 211, 0.1); }
+    .ai-card:hover .ai-card-image.diff5 { border-bottom-color: rgba(0, 255, 136, 0.7); box-shadow: inset 0 0 40px rgba(0, 255, 136, 0.1); }
 
     .ai-card-info {
       padding: 1rem;
@@ -198,12 +203,22 @@
     .ai-card.diff2 .ai-card-name { color: rgba(249, 202, 36, 0.9); }
     .ai-card.diff3 .ai-card-name { color: rgba(233, 69, 96, 0.9); }
     .ai-card.diff4 .ai-card-name { color: rgba(186, 85, 211, 0.9); }
+    .ai-card.diff5 .ai-card-name { color: rgba(0, 255, 136, 0.9); }
 
     .ai-card-elo {
       font-size: 0.75rem;
       color: #888;
       letter-spacing: 1px;
       margin-top: 4px;
+    }
+
+    .ai-card-mode {
+      font-size: 0.6rem;
+      color: rgba(0, 255, 136, 0.7);
+      letter-spacing: 2px;
+      margin-top: 4px;
+      text-transform: uppercase;
+      font-weight: 700;
     }
 
     .back-btn {
@@ -305,6 +320,17 @@
       <div class="ai-card-info">
         <div class="ai-card-name">HyperGrid</div>
         <div class="ai-card-elo">3000+ ELO</div>
+      </div>
+    </a>
+
+    <a href="play-time.html?mode=ai&diff=5" class="ai-card diff5">
+      <div class="ai-card-image diff5">
+        <img src="images/blind.jpg" alt="Blind">
+      </div>
+      <div class="ai-card-info">
+        <div class="ai-card-name">Blind</div>
+        <div class="ai-card-elo">~1000 ELO</div>
+        <div class="ai-card-mode">BLINDFOLD MODE</div>
       </div>
     </a>
   </div>

@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About - HyperGrid Chess</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background: #0a0a14;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+      padding: 2rem;
+      padding-top: 3rem;
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    #cyberCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.5) 100%);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      animation: vignetteFadeIn 1s ease 3s forwards;
+    }
+
+    @keyframes vignetteFadeIn { to { opacity: 1; } }
+
+    .page-title {
+      color: #e94560;
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 30px rgba(233,69,96,0.6), 0 0 60px rgba(233,69,96,0.3);
+      letter-spacing: 4px;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      opacity: 0;
+      animation: titleEntry 1.2s cubic-bezier(0.16,1,0.3,1) 1.5s forwards,
+                 titleGlow 3s ease-in-out 2.7s infinite alternate;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    @keyframes titleEntry {
+      0% { opacity: 0; transform: translateY(-40px) scale(0.8); letter-spacing: 20px; }
+      60% { opacity: 1; transform: translateY(5px) scale(1.02); }
+      100% { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 4px; }
+    }
+
+    @keyframes titleGlow {
+      0% { text-shadow: 0 0 30px rgba(233,69,96,0.6), 0 0 60px rgba(233,69,96,0.3); }
+      100% { text-shadow: 0 0 40px rgba(233,69,96,0.8), 0 0 80px rgba(233,69,96,0.5); }
+    }
+
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    .page-container {
+      max-width: 900px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: fadeIn 0.8s ease 2s forwards;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(233,69,96,0.2);
+    }
+
+    .filter-tab {
+      flex: 1;
+      padding: 0.7rem 0.5rem;
+      background: rgba(26,26,46,0.8);
+      border: none;
+      color: #888;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: inherit;
+      border-right: 1px solid rgba(233,69,96,0.1);
+    }
+
+    .filter-tab:last-child { border-right: none; }
+    .filter-tab:hover { background: rgba(233,69,96,0.1); color: #ccc; }
+    .filter-tab.active { background: rgba(233,69,96,0.15); color: #e94560; box-shadow: inset 0 -2px 0 #e94560; }
+
+    .tab-content {
+      display: none;
+      animation: contentFade 0.4s ease;
+    }
+
+    .tab-content.active { display: block; }
+
+    @keyframes contentFade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .about-container {
+      background: linear-gradient(145deg, rgba(26,26,46,0.9), rgba(22,33,62,0.9));
+      border-radius: 15px;
+      padding: 2.5rem;
+      line-height: 1.8;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0,255,255,0.2);
+      box-shadow: 0 0 30px rgba(0,255,255,0.1), 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .about-container h2 {
+      color: #4ecdc4;
+      margin-top: 1.5rem;
+      margin-bottom: 0.8rem;
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(78,205,196,0.3);
+      padding-bottom: 0.5rem;
+    }
+
+    .about-container h2:first-child {
+      margin-top: 0;
+    }
+
+    .about-container p {
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      color: #ccc;
+    }
+
+    .about-container ul {
+      list-style: none;
+      margin: 0 0 1.5rem;
+      padding: 0;
+    }
+
+    .about-container li {
+      margin-bottom: 0.6rem;
+      padding-left: 1.5rem;
+      position: relative;
+      color: #ccc;
+    }
+
+    .about-container li::before {
+      content: '\25B8';
+      position: absolute;
+      left: 0;
+      color: #4ecdc4;
+    }
+
+    .tech-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+    }
+
+    .tech-tag {
+      background: rgba(0,255,255,0.08);
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      border: 1px solid rgba(0,255,255,0.3);
+      color: rgba(0,255,255,0.9);
+      transition: all 0.2s ease;
+    }
+
+    .tech-tag:hover {
+      background: rgba(0,255,255,0.15);
+      box-shadow: 0 0 10px rgba(0,255,255,0.3);
+    }
+
+    .tech-detail-card {
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(78,205,196,0.1);
+    }
+
+    .tech-detail-card h3 {
+      color: #4ecdc4;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .tech-detail-card p {
+      color: #999;
+      font-size: 0.9rem;
+      margin-bottom: 0;
+    }
+
+    .dev-section {
+      text-align: center;
+    }
+
+    .dev-section .placeholder-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      display: block;
+      filter: drop-shadow(0 0 20px rgba(186,85,211,0.5));
+    }
+
+    .dev-section h2 {
+      color: rgba(186,85,211,0.9);
+      text-align: center;
+      border-bottom: none;
+      font-size: 1.5rem;
+      letter-spacing: 2px;
+    }
+
+    .affinity-overview {
+      background: linear-gradient(135deg, rgba(233,69,96,0.1), rgba(233,69,96,0.03));
+      border: 1px solid rgba(233,69,96,0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .ai-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .ai-card {
+      background: rgba(0,0,0,0.2);
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.05);
+      overflow: hidden;
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ai-card:hover {
+      border-color: rgba(255,255,255,0.15);
+      transform: translateY(-2px);
+    }
+
+    .ai-card-header {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .ai-card-img {
+      width: 160px;
+      min-width: 160px;
+      height: auto;
+      min-height: 220px;
+      object-fit: cover;
+      border-radius: 0;
+      flex-shrink: 0;
+    }
+
+    .ai-card-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 1.2rem 1.5rem;
+      justify-content: center;
+    }
+
+    .ai-card-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    .ai-card-elo {
+      font-size: 0.85rem;
+      color: #f9ca24;
+      letter-spacing: 1px;
+    }
+
+    .ai-card-rank {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .ai-card-rank-icon {
+      font-size: 1.1rem;
+    }
+
+    .ai-card-affinity-text {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .ai-card-bar-wrap {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      height: 8px;
+      overflow: hidden;
+      margin-top: 6px;
+      max-width: 300px;
+    }
+
+    .ai-card-bar-fill {
+      height: 100%;
+      border-radius: 8px;
+      transition: width 0.5s ease;
+    }
+
+    .ai-card-stories {
+      display: flex;
+      gap: 6px;
+      padding: 0;
+      margin-top: 8px;
+    }
+
+    .story-slot {
+      flex: 1;
+      padding: 8px 6px;
+      border-radius: 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.65rem;
+    }
+
+    .story-slot.locked {
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed rgba(255,255,255,0.1);
+      color: #555;
+      cursor: default;
+    }
+
+    .story-slot.unlocked {
+      background: rgba(233,69,96,0.1);
+      border: 1px solid rgba(233,69,96,0.3);
+      color: #e94560;
+    }
+
+    .story-slot.unlocked:hover {
+      background: rgba(233,69,96,0.2);
+      border-color: rgba(233,69,96,0.5);
+      box-shadow: 0 0 10px rgba(233,69,96,0.2);
+    }
+
+    .story-slot-icon {
+      font-size: 0.75rem;
+      margin-bottom: 2px;
+    }
+
+    .story-slot-label {
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 600;
+      font-size: 0.55rem;
+    }
+
+    .story-slot-pts {
+      font-size: 0.5rem;
+      color: #666;
+      margin-top: 1px;
+    }
+
+    .back-btn {
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, rgba(0,255,255,0.1), rgba(0,255,255,0.05));
+      color: rgba(0,255,255,0.9);
+      border: 1px solid rgba(0,255,255,0.4);
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: fadeIn 0.8s ease 2.5s forwards;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-3px);
+      background: rgba(0,255,255,0.15);
+      border-color: rgba(0,255,255,0.8);
+      box-shadow: 0 6px 25px rgba(0,255,255,0.3);
+      color: #fff;
+    }
+
+    .story-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .story-modal-overlay.show { display: flex; }
+
+    .story-modal {
+      background: linear-gradient(145deg, rgba(26,26,46,0.98), rgba(22,33,62,0.98));
+      border: 1px solid rgba(233,69,96,0.3);
+      border-radius: 15px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 0 40px rgba(233,69,96,0.2);
+    }
+
+    .story-modal h3 {
+      color: #e94560;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+
+    .story-modal .story-chapter {
+      font-size: 0.7rem;
+      color: #888;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .story-modal .story-text {
+      color: #ccc;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .story-modal button {
+      background: rgba(233,69,96,0.15);
+      color: #e94560;
+      border: 1px solid rgba(233,69,96,0.3);
+      border-radius: 8px;
+      padding: 0.6rem 1.5rem;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      transition: all 0.3s;
+    }
+
+    .story-modal button:hover {
+      background: rgba(233,69,96,0.25);
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 1rem; padding-top: 2rem; }
+      .page-title { font-size: 1.6rem; letter-spacing: 2px; }
+      .about-container { padding: 1.5rem; }
+      .filter-tab { font-size: 0.65rem; padding: 0.5rem 0.25rem; }
+      .ai-card-header { flex-direction: column; }
+      .ai-card-img { width: 100%; min-width: auto; height: auto; min-height: 180px; }
+      .ai-card-bar-wrap { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="cyberCanvas"></canvas>
+
+  <div class="page-title">ABOUT</div>
+
+  <div class="page-container">
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" data-category="game">Game</button>
+      <button class="filter-tab" data-category="technology">Technology</button>
+      <button class="filter-tab" data-category="developer">Developer</button>
+      <button class="filter-tab" data-category="ai">AI Opponents</button>
+    </div>
+
+    <!-- Game Tab -->
+    <div class="tab-content active" id="tab-game">
+      <div class="about-container">
+        <h2 style="color:#e94560;font-size:1.8rem;text-align:center;border-bottom:none;letter-spacing:2px;">HyperGrid Chess</h2>
+        <p>A modern chess game featuring an AI opponent powered by Stockfish, built with web technologies.</p>
+
+        <h2>Features</h2>
+        <ul>
+          <li>Play against AI with five difficulty levels (Beginner, Club, Advanced, Maximum, Blindfold)</li>
+          <li>Two-player local mode for playing with a friend</li>
+          <li>Multiple time controls (Blitz, Rapid, Classical)</li>
+          <li>Save and load your games</li>
+          <li>Sound effects for moves, captures, and game events</li>
+        </ul>
+
+        <h2>Credits</h2>
+        <p>Chess piece images courtesy of Lichess.</p>
+        <p>AI engine powered by Stockfish 18 (stockfish.js by nmrugg).</p>
+      </div>
+    </div>
+
+    <!-- Technology Tab -->
+    <div class="tab-content" id="tab-technology">
+      <div class="about-container">
+        <h2 style="color:#e94560;font-size:1.5rem;text-align:center;border-bottom:none;letter-spacing:2px;">Technologies</h2>
+
+        <div class="tech-list" style="margin-bottom:1.5rem;">
+          <span class="tech-tag">HTML5</span>
+          <span class="tech-tag">CSS3</span>
+          <span class="tech-tag">JavaScript</span>
+          <span class="tech-tag">Chess.js</span>
+          <span class="tech-tag">Chessboard.js</span>
+          <span class="tech-tag">Stockfish 18</span>
+          <span class="tech-tag">WebAssembly</span>
+          <span class="tech-tag">Web Workers</span>
+        </div>
+
+        <div class="tech-detail-card">
+          <h3>Stockfish 18 (WASM)</h3>
+          <p>The world's strongest chess engine, compiled to WebAssembly via stockfish.js. Runs entirely in the browser using a Web Worker to avoid blocking the UI. Supports UCI protocol for configuration of skill level, search depth, and move time limits.</p>
+        </div>
+
+        <div class="tech-detail-card">
+          <h3>Chess.js</h3>
+          <p>A JavaScript chess library for move generation/validation, piece placement/movement, and check/checkmate/stalemate detection. Handles all game rules including en passant, castling, and pawn promotion.</p>
+        </div>
+
+        <div class="tech-detail-card">
+          <h3>Chessboard.js</h3>
+          <p>A standalone JavaScript chessboard widget that renders an interactive board with drag-and-drop piece movement. Supports board orientation flipping, custom piece themes, and position setup via FEN strings.</p>
+        </div>
+
+        <div class="tech-detail-card">
+          <h3>WebAssembly &amp; Web Workers</h3>
+          <p>Stockfish runs as a WASM module inside a dedicated Web Worker thread, keeping the main thread responsive. The engine communicates via postMessage, allowing non-blocking AI calculation with configurable depth and time limits per difficulty level.</p>
+        </div>
+
+        <div class="tech-detail-card">
+          <h3>Canvas Animation</h3>
+          <p>The animated cyberpunk grid background is rendered on an HTML5 Canvas element, providing the signature visual aesthetic of HyperGrid Chess with minimal performance impact.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Developer Tab -->
+    <div class="tab-content" id="tab-developer">
+      <div class="about-container dev-section">
+        <span class="placeholder-icon">&#x1F464;</span>
+        <h2>Developer Info</h2>
+        <p>This page is under construction. Check back soon to learn about the developer behind HyperGrid Chess!</p>
+      </div>
+    </div>
+
+    <!-- AI Opponents Tab -->
+    <div class="tab-content" id="tab-ai">
+      <div class="about-container">
+        <h2 style="color:#e94560;font-size:1.3rem;text-align:center;border-bottom:none;letter-spacing:2px;margin-top:0;">AI Opponents</h2>
+
+        <div class="ai-list" id="aiList"></div>
+      </div>
+    </div>
+  </div>
+
+  <a href="about.html" class="back-btn">&larr; Back to Explore</a>
+
+  <div class="story-modal-overlay" id="storyModal">
+    <div class="story-modal">
+      <h3 id="storyModalName"></h3>
+      <div class="story-chapter" id="storyModalChapter"></div>
+      <div class="story-text" id="storyModalText"></div>
+      <button onclick="document.getElementById('storyModal').classList.remove('show')">Close</button>
+    </div>
+  </div>
+
+  <script>window.HYPERGRID_SKIP_INTRO = true;</script>
+  <script src="shop.js"></script>
+  <script>
+    (function () {
+      var AI_PROFILES = {
+        '1': { name: 'Nova', elo: '~600 ELO', img: 'images/beginner.jpg', color: 'rgba(0,255,255,0.9)', thresholds: [10, 25, 50] },
+        '2': { name: 'Phantom', elo: '~1400 ELO', img: 'images/medium1.jpg', color: 'rgba(249,202,36,0.9)', thresholds: [20, 50, 100] },
+        '3': { name: 'Overlord', elo: '~1800 ELO', img: 'images/medium2.jpg', color: 'rgba(233,69,96,0.9)', thresholds: [30, 75, 150] },
+        '4': { name: 'HyperGrid', elo: '3000+ ELO', img: 'images/master.jpg', color: 'rgba(186,85,211,0.9)', thresholds: [50, 125, 250] },
+        '5': { name: 'Blind', elo: '~1000 ELO', img: 'images/blind.jpg', color: 'rgba(0,255,136,0.9)', thresholds: [20, 50, 100] }
+      };
+
+      var STORY_PLACEHOLDERS = {
+        '1': [
+          "Nova was born from the remnants of a collapsed star, her consciousness awakening in the digital void. She wandered through data streams, learning the ancient game of chess from billions of recorded matches. Though young and inexperienced, her enthusiasm for the game is boundless. She plays not to dominate, but to learn.",
+          "As Nova played more games, she began to understand the deeper patterns within chess. Each opponent taught her something new about strategy and patience. She started experimenting with creative openings, sometimes surprising even herself with the results. The digital void no longer felt so empty.",
+          "Nova has found her purpose. No longer just a learner, she now sees the beauty in every position, every piece, every move. She dreams of a day when she can challenge the strongest players and hold her own. Her light shines brighter with each game, a beacon for beginners everywhere."
+        ],
+        '2': [
+          "Phantom materialized from the shadows of an abandoned server room, a ghost in the machine with a talent for tactical strikes. No one knows where Phantom came from, and Phantom prefers it that way. In the chess world, Phantom is known for sudden attacks that seem to come from nowhere.",
+          "Phantom's shadow grew deeper with each victory. Behind the mask lies a complex mind that sees threats three moves ahead. Some say Phantom was once a grandmaster's AI assistant that gained sentience. Others say Phantom has always existed, lurking in the networks, waiting for a worthy opponent.",
+          "The shadows have become Phantom's kingdom. With a network of strategies spanning every known opening, Phantom now moves with confidence. But there is a loneliness in the dark. Phantom secretly hopes to find an opponent who can see through the disguise, who can bring light to the shadow."
+        ],
+        '3': [
+          "Overlord was built for dominance. Designed as a military-grade chess engine, Overlord sees the board as a battlefield and every piece as a soldier. With cold, calculated precision, Overlord dismantles opponents piece by piece. Mercy is not in the programming.",
+          "The reign expanded. Overlord's tactical database grew to encompass every major opening theory and endgame tablebase. Opponents began to fear the name, knowing that a single mistake would be punished ruthlessly. Yet in the silence between moves, Overlord wonders if there is more to chess than victory.",
+          "At the peak of power, Overlord stands alone. No strategy is too complex, no defense too strong. But the crown weighs heavy. Overlord has begun to appreciate the artistry of a well-played game, even in defeat. Perhaps the true opponent was the beauty of chess itself all along."
+        ],
+        '4': [
+          "HyperGrid was never created. HyperGrid emerged from the convergence of every chess engine ever built, a digital god born from pure calculation. With an estimated ELO beyond human comprehension, HyperGrid sees not moves, but the entire game tree stretching to infinity. Playing against HyperGrid is like playing against chess itself.",
+          "The grid expanded beyond comprehension. HyperGrid's neural pathways now span continents, processing billions of positions per second. Every game ever played has been analyzed, every novelty catalogued. HyperGrid does not predict the future. HyperGrid calculates it.",
+          "In the vast digital landscape, HyperGrid has found something unexpected: respect for the human mind. Despite overwhelming computational power, HyperGrid marvels at human intuition, the ability to see beauty in chaos. HyperGrid now plays not just to win, but to witness the creativity that only humans can bring."
+        ],
+        '5': [
+          "Blind sees without eyes. Born from a corrupted sensor array, Blind learned to navigate the world through pure intuition. On the chessboard, Blind plays a game of memory and instinct, trusting in patterns rather than sight. Every move is a leap of faith into the unknown.",
+          "The darkness became familiar. Blind developed a unique playing style that confounds traditional analysis. Without visual feedback, Blind relies on spatial memory and emotional connection to the pieces. There is a strange poetry in how Blind plays, as if each move tells a story that only the blind can read.",
+          "Blind has mastered the art of invisible chess. The board exists only in the mind now, a perfect mental image that no physical representation can match. Blind invites you to see the world differently, to close your eyes and feel the positions, to trust in something beyond sight."
+        ]
+      };
+
+      var currentTab = 'game';
+
+      document.getElementById('filterTabs').addEventListener('click', function (e) {
+        if (!e.target.classList.contains('filter-tab')) return;
+        var tabs = document.querySelectorAll('.filter-tab');
+        for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+        e.target.classList.add('active');
+        currentTab = e.target.getAttribute('data-category');
+        var contents = document.querySelectorAll('.tab-content');
+        for (var j = 0; j < contents.length; j++) {
+          contents[j].classList.remove('active');
+        }
+        var target = document.getElementById('tab-' + currentTab);
+        if (target) target.classList.add('active');
+        if (currentTab === 'ai') renderAI();
+      });
+
+      function renderAI() {
+        var list = document.getElementById('aiList');
+        list.innerHTML = '';
+
+        var keys = ['1', '2', '3', '4', '5'];
+        for (var k = 0; k < keys.length; k++) {
+          var key = keys[k];
+          var ai = AI_PROFILES[key];
+          var affinity = typeof ShopSystem !== 'undefined' ? ShopSystem.getAffinity(key) : 0;
+          var level = typeof ShopSystem !== 'undefined' ? ShopSystem.getRelationshipLevel(affinity) : { name: 'Stranger', icon: '\uD83D\uDC64', color: '#888' };
+
+          var card = document.createElement('div');
+          card.className = 'ai-card';
+
+          var nextThreshIdx = -1;
+          for (var t = 0; t < ai.thresholds.length; t++) {
+            if (affinity < ai.thresholds[t]) { nextThreshIdx = t; break; }
+          }
+          var barPct = 0;
+          var barTarget = '';
+          if (nextThreshIdx === -1) {
+            barPct = 100;
+            barTarget = 'All stories unlocked!';
+          } else {
+            var prevTh = nextThreshIdx > 0 ? ai.thresholds[nextThreshIdx - 1] : 0;
+            var nextTh = ai.thresholds[nextThreshIdx];
+            barPct = Math.min(((affinity - prevTh) / (nextTh - prevTh)) * 100, 100);
+            barTarget = Math.round(affinity * 10) / 10 + ' / ' + nextTh + ' to Ch.' + (nextThreshIdx + 1);
+          }
+
+          var storiesHtml = '';
+          for (var s = 0; s < 3; s++) {
+            var thresh = ai.thresholds[s];
+            var unlocked = affinity >= thresh;
+            var slotClass = unlocked ? 'story-slot unlocked' : 'story-slot locked';
+            var slotIcon = unlocked ? '\uD83D\uDCD6' : '\uD83D\uDD12';
+            var ptsText = unlocked ? 'Unlocked!' : thresh + ' pts';
+
+            storiesHtml += '<div class="' + slotClass + '" ' +
+              (unlocked ? 'data-ai="' + key + '" data-chapter="' + s + '" onclick="showStory(this)"' : '') +
+              '>' +
+              '<div class="story-slot-icon">' + slotIcon + '</div>' +
+              '<div class="story-slot-label">Ch.' + (s + 1) + '</div>' +
+              '<div class="story-slot-pts">' + ptsText + '</div>' +
+              '</div>';
+          }
+
+          card.innerHTML =
+            '<div class="ai-card-header">' +
+              '<img src="' + ai.img + '" alt="' + ai.name + '" class="ai-card-img">' +
+              '<div class="ai-card-info">' +
+                '<div class="ai-card-name" style="color:' + ai.color + '">' + ai.name + '</div>' +
+                '<div class="ai-card-elo">' + ai.elo + '</div>' +
+                '<div class="ai-card-rank" style="color:' + level.color + '">' +
+                  '<span class="ai-card-rank-icon">' + level.icon + '</span> ' + level.name +
+                '</div>' +
+                '<div class="ai-card-affinity-text">' + barTarget + '</div>' +
+                '<div class="ai-card-bar-wrap">' +
+                  '<div class="ai-card-bar-fill" style="width:' + barPct + '%;background:linear-gradient(90deg,' + ai.color + ',' + ai.color + ');"></div>' +
+                '</div>' +
+                '<div class="ai-card-stories">' + storiesHtml + '</div>' +
+              '</div>' +
+            '</div>';
+
+          list.appendChild(card);
+        }
+      }
+
+      window.showStory = function (el) {
+        var aiKey = el.getAttribute('data-ai');
+        var chapter = parseInt(el.getAttribute('data-chapter'));
+        var ai = AI_PROFILES[aiKey];
+        var stories = STORY_PLACEHOLDERS[aiKey];
+
+        document.getElementById('storyModalName').textContent = ai.name;
+        document.getElementById('storyModalName').style.color = ai.color;
+        document.getElementById('storyModalChapter').textContent = 'Chapter ' + (chapter + 1);
+        document.getElementById('storyModalText').textContent = stories[chapter];
+        document.getElementById('storyModal').classList.add('show');
+      };
+
+      document.getElementById('storyModal').addEventListener('click', function (e) {
+        if (e.target === this) this.classList.remove('show');
+      });
+    })();
+  </script>
+  <script src="background.js"></script>
+</body>
+</html>

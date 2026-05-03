@@ -96,6 +96,12 @@
       <div class="control-group">
         <span id="timeLabel" class="time-label-display" style="display:none;"></span>
       </div>
+      <div class="eval-bar-wrap" id="evalBarWrap" style="display:none;">
+        <div class="eval-bar-container" id="evalBarContainer">
+          <div class="eval-bar-fill" id="evalBarFill"></div>
+          <span class="eval-bar-label" id="evalBarLabel">0.0</span>
+        </div>
+      </div>
       <div class="control-group">
         <button onclick="showSettingsModal()" class="icon-btn" title="Settings">&#9881;</button>
       </div>
@@ -114,6 +120,9 @@
     </div>
 
     <div id="myBoard"></div>
+    <div id="blindfoldBanner" class="blindfold-banner" style="display:none;">
+      <span class="blindfold-icon">&#128064;</span> BLINDFOLD MODE
+    </div>
     <div id="aiThinking" class="ai-thinking" style="display:none;">
       <span class="thinking-icon">&#9881;</span>
       AI is thinking<span class="thinking-dots">...</span>
@@ -206,9 +215,16 @@
     <div class="settings-group">
       <label>Theme</label>
       <select id="themeSelect" onchange="changeBoardTheme()">
-        <option value="theme-cyber" selected>Cyber</option>
-        <option value="theme-dark">Dark</option>
       </select>
+    </div>
+    <div class="settings-group">
+      <label>Pieces</label>
+      <select id="pieceSelect" onchange="changePieceSet()">
+      </select>
+    </div>
+    <div class="settings-group" id="powerupSettings" style="display:none;">
+      <label>Powerups</label>
+      <div id="powerupList"></div>
     </div>
     <div class="settings-group">
       <label>Sound</label>
@@ -236,6 +252,8 @@
   </div>
 </div>
 
+<script src="shop.js"></script>
+<script src="achievements.js"></script>
 <script src="game.js"></script>
 </body>
 </html>

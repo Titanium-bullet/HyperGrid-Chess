@@ -121,8 +121,8 @@
         {
           "id": "m4",
           "fen": "r1bqk2r/pppp1ppp/2n2n2/2b1p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
-          "solution": ["Qxf7"],
-          "hint": "Both bishop and queen aim at f7. Capture and win the pawn!",
+          "solution": ["Qxf7#"],
+          "hint": "Both bishop and queen aim at f7. Checkmate!",
           "difficulty": 2,
           "description": "Battery Attack — Win f7 pawn!"
         },
@@ -216,7 +216,7 @@
         },
         {
           "id": "h5",
-          "fen": "r1bqk2r/pppp1Qpp/2n2n2/2b1p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4",
+          "fen": "r1b1k2r/pppp1Qpp/2n2n2/2b1p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4",
           "solution": ["Kd8"],
           "hint": "The queen is attacking f7 but the king must escape. Find the only safe square.",
           "difficulty": 3,
@@ -232,9 +232,9 @@
         },
         {
           "id": "h7",
-          "fen": "r1bqr1k1/pppn1p1p/3p1np1/3P4/2P1pP2/2N1B1PP/PPPB4/R2Q1RK1 w - - 0 1",
-          "solution": ["Bxh7+", "Nxh7", "Ng5"],
-          "hint": "Another Greek Gift pattern. Bishop sacrifice on h7 followed by Ng5.",
+          "fen": "r2q1rk1/ppp2ppp/2n2n2/3b4/3P4/3B1N2/PPP2PPP/R1BQ1RK1 w - - 0 1",
+          "solution": ["Bxh7+", "Kxh7", "Ng5+"],
+          "hint": "Another Greek Gift pattern. Bishop sacrifice on h7 followed by Ng5+.",
           "difficulty": 4,
           "description": "Sacrifice Attack — Break open the kingside!"
         },
@@ -248,7 +248,7 @@
         },
         {
           "id": "h9",
-          "fen": "r1bq1rk1/pppp1ppp/2n2n2/2b1p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 1",
+          "fen": "r1bq1rk1/pppp1ppp/5n1n/2b1p2Q/2B1P3/4B3/PPPP1PPP/RN2K2R w KQ - 0 1",
           "solution": ["Qxf7+", "Kh8", "Bxh6"],
           "hint": "Force the king to the corner then deliver a crushing blow on h6!",
           "difficulty": 4,
@@ -256,9 +256,9 @@
         },
         {
           "id": "h10",
-          "fen": "r1bq2rk/ppp2Npp/2np1n2/2b1p3/2B1P3/8/PPPP1QPP/RNB1KB1R b KQ - 0 8",
-          "solution": ["Rxf7", "Qxf7"],
-          "hint": "The position is critical. Capture the invasive knight with Rxf7, then deal with the queen.",
+          "fen": "r1bq1rk1/ppp2Npp/2np4/2b1p3/2B1P3/8/PPPP1QPP/RNB1KB1R b KQ - 0 8",
+          "solution": ["Rxf7", "Qxf7+"],
+          "hint": "The position is critical. Capture the invasive knight with Rxf7, then deal with the queen's recapture.",
           "difficulty": 5,
           "description": "Defense Under Fire — Survive the attack!"
         }

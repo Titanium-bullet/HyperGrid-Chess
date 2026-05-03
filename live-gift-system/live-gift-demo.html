@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Gift System Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="live-gift.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a0a14, #1a1a2e);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.4) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 6px;
+    background: linear-gradient(90deg, #FFD700 0%, #FF69B4 50%, #1E90FF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+
+  .page-subtitle {
+    font-size: 0.8rem;
+    color: #666;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .sender-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sender-row label {
+    font-size: 0.8rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  .sender-row input {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: white;
+    font-size: 0.9rem;
+    width: 180px;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .sender-row input:focus {
+    border-color: rgba(255, 215, 0, 0.5);
+  }
+
+  .gift-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .gift-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 20px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 130px;
+    position: relative;
+    overflow: hidden;
+    border: none;
+  }
+
+  .gift-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--btn-color);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .gift-btn:hover::before { opacity: 1; }
+
+  .gift-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px var(--btn-shadow);
+  }
+
+  .gift-btn:active {
+    transform: translateY(-1px) scale(0.97);
+  }
+
+  .gift-btn-epic {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 140, 0, 0.06));
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    --btn-color: #FFD700;
+    --btn-shadow: rgba(255, 215, 0, 0.2);
+  }
+
+  .gift-btn-legendary {
+    background: linear-gradient(135deg, rgba(30, 144, 255, 0.12), rgba(0, 191, 255, 0.06));
+    border: 1px solid rgba(30, 144, 255, 0.3);
+    --btn-color: #1E90FF;
+    --btn-shadow: rgba(30, 144, 255, 0.2);
+  }
+
+  .gift-btn-mythic {
+    background: linear-gradient(135deg, rgba(255, 105, 180, 0.12), rgba(255, 215, 0, 0.06));
+    border: 1px solid rgba(255, 105, 180, 0.3);
+    --btn-color: #FF69B4;
+    --btn-shadow: rgba(255, 105, 180, 0.2);
+  }
+
+  .gift-btn-icon {
+    font-size: 2.2rem;
+    display: block;
+  }
+
+  .gift-btn-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .gift-btn-epic .gift-btn-name { color: #FFD700; }
+  .gift-btn-legendary .gift-btn-name { color: #1E90FF; }
+  .gift-btn-mythic .gift-btn-name { color: #FF69B4; }
+
+  .gift-btn-tier {
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  .combo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .combo-row label {
+    font-size: 0.8rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  .combo-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .combo-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 215, 0, 0.5);
+  }
+
+  .combo-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #FFD700;
+    min-width: 40px;
+    text-align: center;
+  }
+
+  .clear-btn {
+    padding: 10px 24px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #888;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  .clear-btn:hover {
+    background: rgba(255, 50, 50, 0.1);
+    border-color: rgba(255, 50, 50, 0.4);
+    color: #ff6666;
+  }
+
+  @media (max-width: 600px) {
+    .page-title { font-size: 1.3rem; letter-spacing: 3px; }
+    .gift-buttons { flex-direction: column; align-items: center; }
+    .gift-btn { min-width: 260px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">LIVE GIFT SYSTEM</div>
+<div class="page-subtitle">Click a gift to trigger its effect</div>
+
+<div class="controls">
+  <div class="sender-row">
+    <label>Sender</label>
+    <input type="text" id="senderInput" value="TestPlayer" placeholder="Your name">
+  </div>
+
+  <div class="gift-buttons">
+    <button class="gift-btn gift-btn-epic" onclick="demoSend('car')">
+      <span class="gift-btn-icon">&#x1F3CE;&#xFE0F;</span>
+      <span class="gift-btn-name">Luxury Car</span>
+      <span class="gift-btn-tier">EPIC</span>
+    </button>
+    <button class="gift-btn gift-btn-legendary" onclick="demoSend('cruise')">
+      <span class="gift-btn-icon">&#x1F6A2;</span>
+      <span class="gift-btn-name">Cruise Ship</span>
+      <span class="gift-btn-tier">LEGENDARY</span>
+    </button>
+    <button class="gift-btn gift-btn-mythic" onclick="demoSend('island')">
+      <span class="gift-btn-icon">&#x1F3D6;&#xFE0F;</span>
+      <span class="gift-btn-name">Private Island</span>
+      <span class="gift-btn-tier">MYTHIC</span>
+    </button>
+  </div>
+
+  <div class="combo-row">
+    <label>Combo</label>
+    <button class="combo-btn" onclick="changeCombo(-1)">-</button>
+    <span class="combo-value" id="comboValue">1</span>
+    <button class="combo-btn" onclick="changeCombo(1)">+</button>
+    <button class="combo-btn" onclick="setCombo(100)" style="width:auto;border-radius:6px;padding:0 10px;font-size:0.7rem;">x100</button>
+  </div>
+
+  <button class="clear-btn" onclick="clearDemo()">Clear All Effects</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+<script src="live-gift-config.js"></script>
+<script src="live-gift-particles.js"></script>
+<script src="live-gift-models.js"></script>
+<script src="live-gift-effects.js"></script>
+<script src="live-gift-ui.js"></script>
+<script src="live-gift-system.js"></script>
+<script>
+  var currentCombo = 1;
+
+  function changeCombo(delta) {
+    currentCombo = Math.max(1, Math.min(200, currentCombo + delta));
+    document.getElementById('comboValue').textContent = currentCombo;
+  }
+
+  function setCombo(val) {
+    currentCombo = val;
+    document.getElementById('comboValue').textContent = currentCombo;
+  }
+
+  function demoSend(giftId) {
+    var sender = document.getElementById('senderInput').value || 'TestPlayer';
+    LiveGiftSystem.sendGift({ id: giftId, sender: sender, combo: currentCombo });
+  }
+
+  function clearDemo() {
+    LiveGiftSystem.clearQueue();
+    gsap.set(document.body, { x: 0, y: 0 });
+  }
+</script>
+</body>
+</html>

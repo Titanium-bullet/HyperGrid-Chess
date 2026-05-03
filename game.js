@@ -3,6 +3,10 @@ var game = new Chess();
 var pendingMove = null;
 var gameMode = 'ai';
 var aiDifficulty = '1';
+var blindfoldMode = false;
+var blindfoldVisibleSquare = null;
+var currentEval = 0;
+var evalMateScore = null;
 var timeControl = 0;
 var increment = 0;
 var whiteTime = 0;
@@ -21,6 +25,8 @@ var stockfishTimeoutId = null;
 var isAIMoving = false;
 var playerColor = 'w';
 var audioContext = null;
+var achievementGameStartTime = Date.now();
+var achievementHintUsed = false;
 
 // Puzzle mode state
 var puzzleMode = false;
@@ -49,6 +55,7 @@ if (urlMode === 'pvp' || urlMode === 'ai') {
 
   if (urlDiff && urlMode === 'ai') {
     aiDifficulty = urlDiff;
+    blindfoldMode = (aiDifficulty === '5');
   }
 
   if (urlTime) {
@@ -94,7 +101,10 @@ if (urlMode === 'pvp' || urlMode === 'ai') {
 }
 
 function getPieceTheme(piece) {
-  return `https://lichess1.org/assets/piece/pixel/${piece}.svg`;
+  if (typeof ShopSystem !== 'undefined') {
+    return ShopSystem.getPieceUrl(piece);
+  }
+  return 'https://lichess1.org/assets/piece/pixel/' + piece + '.svg';
 }
 
 var config = {
@@ -113,7 +123,7 @@ function initStockfish() {
     stockfish.onmessage = handleStockfishResponse;
     stockfish.postMessage('uci');
     stockfish.postMessage('isready');
-    stockfish.postMessage('setoption name Skill Level value ' + ({ '1': 1, '2': 7, '3': 14, '4': 20 }[aiDifficulty] || 1));
+    stockfish.postMessage('setoption name Skill Level value ' + ({ '1': 1, '2': 7, '3': 14, '4': 20, '5': 4 }[aiDifficulty] || 1));
     console.log('Stockfish 18 Web Worker loaded successfully!');
   } catch (err) {
     console.error('Failed to load Stockfish worker:', err);
@@ -123,6 +133,20 @@ function initStockfish() {
 
 function handleStockfishResponse(event) {
   var message = typeof event.data === 'string' ? event.data : '';
+
+  if (!message.startsWith('bestmove') && message.indexOf('score') !== -1 && isEvalBarEnabled()) {
+    var cpMatch = message.match(/\bscore cp (-?\d+)/);
+    var mateMatch = message.match(/\bscore mate (-?\d+)/);
+    var pvIdx = message.match(/\bmultipv (\d+)/);
+    if ((!pvIdx || pvIdx[1] === '1') && (cpMatch || mateMatch)) {
+      var sign = (game.turn() === 'b') ? -1 : 1;
+      if (mateMatch) {
+        updateEvalBar(parseInt(mateMatch[1]) * sign, true);
+      } else if (cpMatch) {
+        updateEvalBar((parseInt(cpMatch[1]) / 100) * sign, false);
+      }
+    }
+  }
   
   if (message.startsWith('bestmove')) {
     if (!isAIMoving) return;
@@ -173,11 +197,12 @@ function handleStockfishResponse(event) {
         });
 
         try {
-          board.position(game.fen());
+          board.position(game.fen(), !blindfoldMode);
         } catch (e) {
           console.error('Error updating board position:', e);
         }
         highlightLastMove(from, to);
+        updateBlindfoldVisibility(to);
         updateStatus();
         updateTheme();
         updateMoveHistory();
@@ -260,7 +285,12 @@ function onDrop(source, target) {
     san: move.san
   });
 
+  if (typeof AchievementTracker !== 'undefined') {
+    AchievementTracker.trackMove(move);
+  }
+
   boardEl.setAttribute('data-valid-move', 'true');
+  updateBlindfoldVisibility(target);
 }
 
 function handlePuzzleSolved(puzzleData) {
@@ -280,6 +310,11 @@ function handlePuzzleSolved(puzzleData) {
 
   var solvedCountEl = document.getElementById('puzzlesSolvedCount');
   if (solvedCountEl) solvedCountEl.textContent = puzzlesCompleted;
+
+  if (typeof AchievementTracker !== 'undefined') {
+    AchievementTracker.trackPuzzleSolved(puzzleData.id, achievementHintUsed);
+  }
+  achievementHintUsed = false;
 
   showPuzzleCompleteModal(puzzleData);
 }
@@ -376,10 +411,11 @@ function onPuzzleDrop(source, target) {
 
 function onSnapEnd() {
   try {
-    board.position(game.fen());
+    board.position(game.fen(), !blindfoldMode);
   } catch (e) {
     console.error('Error in onSnapEnd board.position:', e);
   }
+  refreshBlindfoldVisibility();
   if (boardEl.hasAttribute('data-valid-move')) {
     if (moveHistory.length > 0) {
       var last = moveHistory[moveHistory.length - 1];
@@ -459,12 +495,17 @@ function promote(pieceType) {
       promotion: pieceType,
       san: move.san
     });
+
+    if (typeof AchievementTracker !== 'undefined') {
+      AchievementTracker.trackMove(move);
+    }
     
     try {
-      board.position(game.fen());
+      board.position(game.fen(), !blindfoldMode);
     } catch (e) {
       console.error('Error in promote board.position:', e);
     }
+    updateBlindfoldVisibility(pendingMove.to);
     pendingMove = null;
     
     updateStatus();
@@ -503,7 +544,8 @@ function makeAIMove() {
     '1': { skill: 1 },
     '2': { skill: 7 },
     '3': { skill: 14 },
-    '4': { skill: 20 }
+    '4': { skill: 20 },
+    '5': { skill: 4 }
   };
   var settings = difficultySettings[aiDifficulty] || difficultySettings['2'];
 
@@ -518,16 +560,27 @@ function makeAIMove() {
     }
   }
 
-  var baseDepths = { '1': 2, '2': 8, '3': 14, '4': 20 };
+  if (aiDifficulty === '5' && Math.random() < 0.10) {
+    var bMoves = game.moves({ verbose: true });
+    if (bMoves.length > 0) {
+      var bRandomMove = bMoves[Math.floor(Math.random() * bMoves.length)];
+      setTimeout(function() {
+        applyAIMoveFromSAN(bRandomMove.san);
+      }, 400);
+      return;
+    }
+  }
+
+  var baseDepths = { '1': 2, '2': 8, '3': 14, '4': 20, '5': 4 };
   var baseDepth = baseDepths[aiDifficulty] || 8;
-  var maxDepths = { '1': 4, '2': 14, '3': 20, '4': 26 };
+  var maxDepths = { '1': 4, '2': 14, '3': 20, '4': 26, '5': 10 };
   var maxDepth = maxDepths[aiDifficulty] || 14;
 
   var progress = Math.min(moveCount / 20, 1);
   var depth = Math.round(baseDepth + (maxDepth - baseDepth) * progress);
 
-  var baseTimeout = { '1': 300, '2': 1500, '3': 3000, '4': 5000 };
-  var maxTimeout = { '1': 500, '2': 3000, '3': 6000, '4': 10000 };
+  var baseTimeout = { '1': 300, '2': 1500, '3': 3000, '4': 5000, '5': 800 };
+  var maxTimeout  = { '1': 500, '2': 3000, '3': 6000, '4': 10000, '5': 2000 };
   var timeoutMs = Math.round(baseTimeout[aiDifficulty] + (maxTimeout[aiDifficulty] - baseTimeout[aiDifficulty]) * progress);
 
   stockfishTimeoutId = setTimeout(function() {
@@ -570,8 +623,9 @@ function applyAIMoveFromSAN(san) {
     san: move.san
   });
 
-  try { board.position(game.fen()); } catch (e) {}
+  try { board.position(game.fen(), !blindfoldMode); } catch (e) {}
   highlightLastMove(move.from, move.to);
+  updateBlindfoldVisibility(move.to);
   isAIMoving = false;
   hideAIThinking();
   updateStatus();
@@ -599,6 +653,7 @@ function updateStatus() {
       if (msg) msg.textContent = moveColor + ' is checkmated!';
       m.classList.add('show');
     }
+    trackGameAchievement('checkmate', moveColor);
   }
   else if (game.in_draw()) {
     status = 'Game Over — Draw';
@@ -613,6 +668,7 @@ function updateStatus() {
       if (msg) msg.textContent = 'The game is a draw.';
       m.classList.add('show');
     }
+    trackGameAchievement('draw', null);
   }
   else {
     status = `${moveColor}'s turn`;
@@ -722,6 +778,72 @@ function updateCapturedPieces() {
   updateMaterialAdvantage();
 }
 
+function trackGameAchievement(endType, loserOrWinner) {
+  if (typeof AchievementTracker === 'undefined') return;
+
+  var playTime = Math.round((Date.now() - achievementGameStartTime) / 1000);
+  var result = 'draw';
+  var winnerColor = null;
+  var playerPiecesLost = null;
+
+  if (endType === 'checkmate') {
+    var loserColor = loserOrWinner === 'White' ? 'w' : 'b';
+    winnerColor = loserColor === 'w' ? 'b' : 'w';
+  } else if (endType === 'timeout') {
+    winnerColor = loserOrWinner;
+  }
+
+  if (gameMode === 'ai') {
+    if (winnerColor === playerColor) {
+      result = 'win';
+    } else if (winnerColor) {
+      result = 'loss';
+    }
+    if (playerColor === 'w') {
+      playerPiecesLost = capturedBlack.length;
+    } else {
+      playerPiecesLost = capturedWhite.length;
+    }
+  } else if (gameMode === 'pvp') {
+    if (winnerColor) result = 'win';
+  }
+
+  if (urlMode === 'trial') {
+    if (winnerColor === playerColor) result = 'win';
+    else if (winnerColor) result = 'loss';
+  }
+
+  AchievementTracker.trackGameEnd(result, {
+    mode: urlMode === 'trial' ? 'trial' : gameMode,
+    difficulty: aiDifficulty,
+    playerColor: playerColor,
+    winnerColor: winnerColor,
+    moveCount: moveHistory.length,
+    playerPiecesLost: playerPiecesLost,
+    playTime: playTime
+  });
+
+  if (typeof ShopSystem !== 'undefined' && result === 'win') {
+    ShopSystem.awardCoins(5);
+    if (urlMode === 'trial') {
+      ShopSystem.awardCoins(45);
+    }
+  }
+
+  if (typeof ShopSystem !== 'undefined' && gameMode === 'ai' && urlMode !== 'trial') {
+    var affinityTable = {
+      '1': { loss: 0.5, draw: 1, win: 2 },
+      '2': { loss: 1, draw: 2, win: 4 },
+      '5': { loss: 1, draw: 2, win: 4 },
+      '3': { loss: 1.5, draw: 3, win: 6 },
+      '4': { loss: 2.5, draw: 5, win: 10 }
+    };
+    var pts = affinityTable[aiDifficulty] || affinityTable['1'];
+    var earned = pts[result] || 0;
+    if (earned > 0) ShopSystem.addAffinity(aiDifficulty, earned);
+  }
+}
+
 function resetGame() {
   game.reset();
   board.start();
@@ -733,6 +855,7 @@ function resetGame() {
   timeExpired = false;
   playerColor = 'w';
   board.orientation('white');
+  achievementGameStartTime = Date.now();
   updateFlipButton();
   whiteTime = timeControl;
   blackTime = timeControl;
@@ -741,6 +864,9 @@ function resetGame() {
   isTimerRunning = false;
   isAIMoving = false;
   pendingMove = null;
+  updateBlindfoldVisibility(null);
+  updateEvalBar(0, false);
+  evalMateScore = null;
   document.getElementById('promotionModal').classList.remove('show');
   document.getElementById('gameOverModal').classList.remove('show');
   if (stockfishTimeoutId) {
@@ -776,6 +902,7 @@ function handleFlipOrSwitch() {
   } else {
     board.flip();
   }
+  setTimeout(refreshBlindfoldVisibility, 100);
 }
 
 function updateFlipButton() {
@@ -857,6 +984,7 @@ function undoMove() {
   } catch (e) {
     console.error('Error in undoMove board.position:', e);
   }
+  updateBlindfoldVisibility(null);
   muteSounds = true;
   updateStatus();
   muteSounds = false;
@@ -870,9 +998,9 @@ function changeGameMode() {
 
 function changeDifficulty() {
   updateEloBadge();
-  updateAIProfile();
+updateAIProfile();
   if (stockfish) {
-    var skillMap = { '1': 1, '2': 7, '3': 14, '4': 20 };
+    var skillMap = { '1': 1, '2': 7, '3': 14, '4': 20, '5': 4 };
     stockfish.postMessage('setoption name Skill Level value ' + (skillMap[aiDifficulty] || 1));
   }
 }
@@ -937,6 +1065,7 @@ function updateTimer() {
       if (msg) msg.textContent = whiteTime <= 0 ? 'Black wins on time!' : 'White wins on time!';
       m.classList.add('show');
     }
+    trackGameAchievement('timeout', whiteTime <= 0 ? 'b' : 'w');
   }
 }
 
@@ -1042,6 +1171,61 @@ function playSound(type) {
         osc.stop(audioContext.currentTime + i * 0.2 + 0.3);
       });
       break;
+    case 'achievement-bronze':
+      var bronzeNotes = [523, 659];
+      bronzeNotes.forEach((freq, i) => {
+        var osc = audioContext.createOscillator();
+        var gain = audioContext.createGain();
+        osc.type = 'triangle';
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.08, audioContext.currentTime + i * 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.25);
+        osc.start(audioContext.currentTime + i * 0.15);
+        osc.stop(audioContext.currentTime + i * 0.15 + 0.25);
+      });
+      break;
+    case 'achievement-silver':
+      var silverNotes = [523, 659, 784];
+      silverNotes.forEach((freq, i) => {
+        var osc = audioContext.createOscillator();
+        var gain = audioContext.createGain();
+        osc.type = 'triangle';
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.1, audioContext.currentTime + i * 0.14);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.14 + 0.25);
+        osc.start(audioContext.currentTime + i * 0.14);
+        osc.stop(audioContext.currentTime + i * 0.14 + 0.25);
+      });
+      break;
+    case 'achievement-gold':
+      var goldNotes = [523, 659, 784, 1047];
+      goldNotes.forEach((freq, i) => {
+        var osc = audioContext.createOscillator();
+        var gain = audioContext.createGain();
+        osc.type = 'triangle';
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.12, audioContext.currentTime + i * 0.13);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.13 + 0.3);
+        osc.start(audioContext.currentTime + i * 0.13);
+        osc.stop(audioContext.currentTime + i * 0.13 + 0.3);
+      });
+      var shimmer = audioContext.createOscillator();
+      var shimGain = audioContext.createGain();
+      shimmer.type = 'sine';
+      shimmer.connect(shimGain);
+      shimGain.connect(audioContext.destination);
+      shimmer.frequency.value = 2093;
+      shimGain.gain.setValueAtTime(0.06, audioContext.currentTime + 0.5);
+      shimGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.9);
+      shimmer.start(audioContext.currentTime + 0.5);
+      shimmer.stop(audioContext.currentTime + 0.9);
+      break;
   }
 }
 
@@ -1055,11 +1239,26 @@ if (puzzleMode) {
   initStockfish();
 }
 updateStatus();
+if (typeof ShopSystem !== 'undefined') {
+  var equippedBoard = ShopSystem.getEquippedBoard();
+  boardEl.classList.remove('theme-cyber', 'theme-dark', 'theme-neon', 'theme-inferno', 'theme-arctic', 'theme-royal', 'theme-matrix', 'theme-rose');
+  boardEl.classList.add(equippedBoard);
+}
 updateTheme();
 updateTimers();
 updateFlipButton();
 updateEloBadge();
 updateAIProfile();
+initEvalBar();
+
+if (blindfoldMode) {
+  boardEl.classList.add('blindfold-mode');
+  var blindBanner = document.getElementById('blindfoldBanner');
+  if (blindBanner) blindBanner.style.display = '';
+  var moveHistSection = document.getElementById('moveHistorySection');
+  if (moveHistSection) moveHistSection.style.display = 'none';
+  startBlindfoldObserver();
+}
 
 function updateEloBadge() {
 }
@@ -1087,7 +1286,8 @@ function updateAIProfile() {
     '1': { name: 'Nova', elo: '~600 ELO', img: 'images/beginner.jpg' },
     '2': { name: 'Phantom', elo: '~1400 ELO', img: 'images/medium1.jpg' },
     '3': { name: 'Overlord', elo: '~1800 ELO', img: 'images/medium2.jpg' },
-    '4': { name: 'HyperGrid', elo: '3000+ ELO', img: 'images/master.jpg' }
+    '4': { name: 'HyperGrid', elo: '3000+ ELO', img: 'images/master.jpg' },
+    '5': { name: 'Blind', elo: '~1000 ELO', img: 'images/blind.jpg' }
   };
   var p = profiles[aiDifficulty] || profiles['1'];
   if (nameEl) nameEl.textContent = p.name;
@@ -1111,6 +1311,102 @@ function clearHighlights() {
   boardDiv.querySelectorAll('.highlight-lastmove').forEach(function(el) {
     el.classList.remove('highlight-lastmove');
   });
+}
+
+function updateBlindfoldVisibility(square) {
+  if (!blindfoldMode) return;
+  var boardDiv = document.getElementById('myBoard');
+  if (!boardDiv) return;
+  blindfoldVisibleSquare = square;
+  boardDiv.querySelectorAll('.bf-show').forEach(function(el) {
+    el.classList.remove('bf-show');
+  });
+  if (!square) return;
+  var sqEl = boardDiv.querySelector('[data-squareid="' + square + '"]') ||
+             boardDiv.querySelector('[data-square="' + square + '"]');
+  if (sqEl) sqEl.classList.add('bf-show');
+}
+
+function refreshBlindfoldVisibility() {
+  if (!blindfoldMode || !blindfoldVisibleSquare) return;
+  updateBlindfoldVisibility(blindfoldVisibleSquare);
+}
+
+var bfObserver = null;
+function startBlindfoldObserver() {
+  if (bfObserver || !blindfoldMode) return;
+  var boardDiv = document.getElementById('myBoard');
+  if (!boardDiv) return;
+  bfObserver = new MutationObserver(function() {
+    if (blindfoldVisibleSquare) {
+      var sqEl = boardDiv.querySelector('[data-squareid="' + blindfoldVisibleSquare + '"]') ||
+                 boardDiv.querySelector('[data-square="' + blindfoldVisibleSquare + '"]');
+      if (sqEl && !sqEl.classList.contains('bf-show')) {
+        sqEl.classList.add('bf-show');
+      }
+    }
+  });
+  bfObserver.observe(boardDiv, { childList: true, subtree: true });
+}
+
+function isEvalBarEnabled() {
+  try {
+    if (typeof ShopSystem === 'undefined') return false;
+    var inv = ShopSystem.getInventory();
+    return inv && inv.powerups && inv.powerups.evalBar > 0;
+  } catch (e) { return false; }
+}
+
+function initEvalBar() {
+  var wrap = document.getElementById('evalBarWrap');
+  if (!wrap) return;
+  if (isEvalBarEnabled()) {
+    wrap.style.display = 'flex';
+    updateEvalBarDisplay();
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+function updateEvalBar(evalValue, isMate) {
+  if (isMate) {
+    evalMateScore = evalValue;
+    currentEval = evalValue > 0 ? 10 : -10;
+  } else {
+    evalMateScore = null;
+    currentEval = Math.max(-10, Math.min(10, evalValue));
+  }
+  updateEvalBarDisplay();
+}
+
+function updateEvalBarDisplay() {
+  var fill = document.getElementById('evalBarFill');
+  var label = document.getElementById('evalBarLabel');
+  if (!fill || !label) return;
+
+  var pct = 50 + (currentEval / 10) * 50;
+  pct = Math.max(3, Math.min(97, pct));
+  fill.style.width = pct + '%';
+  label.style.left = pct + '%';
+
+  if (pct > 55) {
+    label.style.color = '#1a1a1a';
+  } else {
+    label.style.color = '#fff';
+  }
+
+  if (evalMateScore !== null) {
+    var moves = Math.abs(evalMateScore);
+    label.textContent = evalMateScore > 0 ? ('+M' + moves) : ('-M' + moves);
+  } else {
+    var display = currentEval;
+    if (Math.abs(display) >= 10) {
+      label.textContent = display > 0 ? '+10.0' : '-10.0';
+    } else {
+      var str = (display >= 0 ? '+' : '') + display.toFixed(1);
+      label.textContent = str;
+    }
+  }
 }
 
 function showAIThinking() {
@@ -1211,11 +1507,8 @@ function loadPuzzle(previousId) {
       gameStarted = false;
       stopTimer();
 
-      if (puzzleData.difficulty >= 4) {
-        board.orientation('white');
-      } else {
-        board.orientation('white');
-      }
+      var turnColor = game.turn();
+      board.orientation(turnColor === 'b' ? 'black' : 'white');
 
       updateMoveHistory();
       updateCapturedPieces();
@@ -1336,6 +1629,7 @@ function showPuzzleHint() {
     hintEl.textContent = puzzleData.hint;
     hintEl.style.color = '#f9ca24';
     puzzleHintShown = true;
+    achievementHintUsed = true;
     updateRivalDialogue('hint');
   }
 }
@@ -1366,6 +1660,7 @@ function nextPuzzle() {
   puzzleSolved = false;
   puzzleFailed = false;
   puzzleHintShown = false;
+  achievementHintUsed = false;
   statusEl.style.color = '';
   loadPuzzle(currentId);
 }
@@ -1381,6 +1676,7 @@ function resetPuzzle() {
   puzzleSolved = false;
   puzzleFailed = false;
   puzzleHintShown = false;
+  achievementHintUsed = false;
   statusEl.textContent = 'Find the best move!';
   setPuzzleStatusColor();
   updateMoveHistory();
@@ -1407,6 +1703,7 @@ function updateMaterialAdvantage() {
 }
 
 function showSettingsModal() {
+  populateSettingsDropdowns();
   document.getElementById('settingsModal').classList.add('show');
 }
 
@@ -1414,11 +1711,90 @@ function hideSettingsModal() {
   document.getElementById('settingsModal').classList.remove('show');
 }
 
+function populateSettingsDropdowns() {
+  var themeSelect = document.getElementById('themeSelect');
+  var pieceSelect = document.getElementById('pieceSelect');
+  var powerupSettings = document.getElementById('powerupSettings');
+  var powerupList = document.getElementById('powerupList');
+
+  if (typeof ShopSystem === 'undefined') return;
+
+  var inv = ShopSystem.getInventory();
+  var items = ShopSystem.getItems();
+
+  themeSelect.innerHTML = '';
+  for (var i = 0; i < items.boards.length; i++) {
+    var b = items.boards[i];
+    if (inv.boards.indexOf(b.id) !== -1) {
+      var opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = b.name;
+      if (inv.equippedBoard === b.id) opt.selected = true;
+      themeSelect.appendChild(opt);
+    }
+  }
+
+  pieceSelect.innerHTML = '';
+  for (var j = 0; j < items.pieces.length; j++) {
+    var p = items.pieces[j];
+    if (inv.pieces.indexOf(p.id) !== -1) {
+      var popt = document.createElement('option');
+      popt.value = p.id;
+      popt.textContent = p.name;
+      if (inv.equippedPieces === p.id) popt.selected = true;
+      pieceSelect.appendChild(popt);
+    }
+  }
+
+  var hasPowerups = false;
+  powerupList.innerHTML = '';
+  for (var k = 0; k < items.powerups.length; k++) {
+    var pw = items.powerups[k];
+    var count = inv.powerups[pw.id] || 0;
+    if (count > 0) {
+      hasPowerups = true;
+      var div = document.createElement('div');
+      div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:0.85rem;';
+      div.innerHTML = '<span>' + pw.icon + ' ' + pw.name + '</span><span style="color:#ffd700">x' + count + '</span>';
+      powerupList.appendChild(div);
+    }
+  }
+  powerupSettings.style.display = hasPowerups ? '' : 'none';
+}
+
+function changePieceSet() {
+  var select = document.getElementById('pieceSelect');
+  var set = select.value;
+  if (typeof ShopSystem !== 'undefined') {
+    ShopSystem.equip('pieces', set);
+  }
+  config.pieceTheme = function (piece) {
+    return getPieceTheme(piece);
+  };
+  board = Chessboard("myBoard", {
+    draggable: true,
+    position: game.fen(),
+    pieceTheme: getPieceTheme,
+    onDragStart: onDragStart,
+    onDrop: onDrop,
+    onSnapEnd: onSnapEnd
+  });
+  if (playerColor === 'b') board.orientation('black');
+  updateTheme();
+  if (blindfoldMode) {
+    boardEl.classList.add('blindfold-mode');
+    startBlindfoldObserver();
+  }
+}
+
 function changeBoardTheme() {
   var select = document.getElementById('themeSelect');
   var theme = select.value;
-  boardEl.classList.remove('theme-cyber', 'theme-dark');
+  boardEl.classList.remove('theme-cyber', 'theme-dark', 'theme-neon', 'theme-inferno', 'theme-arctic', 'theme-royal', 'theme-matrix', 'theme-rose');
   boardEl.classList.add(theme);
+  if (typeof ShopSystem !== 'undefined') {
+    ShopSystem.equip('boards', theme);
+  }
 }
 
 function hideGameOverModal() {
