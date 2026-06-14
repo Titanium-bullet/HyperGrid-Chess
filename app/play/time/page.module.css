@@ -1,0 +1,160 @@
+.pageWrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #0a0a14;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: white;
+  padding: 2rem 1.5rem;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.pageTitle {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: 1.8rem;
+  color: #e94560;
+  text-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+  letter-spacing: 3px;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+
+.pageSubtitle {
+  font-size: 0.85rem;
+  color: #888;
+  letter-spacing: 2px;
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.timeSections {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 580px;
+}
+
+.timeCategory {
+  margin-bottom: 1.5rem;
+}
+
+.categoryLabel {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+
+.categoryLabel.bullet { color: #ff6b6b; }
+.categoryLabel.blitz { color: #4ecdc4; }
+.categoryLabel.rapid { color: #ba55dc; }
+.categoryLabel.unlimitedLabel { color: #666; }
+
+.timeRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.timeCard {
+  flex: 1;
+  min-width: 80px;
+  max-width: 110px;
+  padding: 18px 12px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  display: block;
+  appearance: none;
+  font: inherit;
+  color: inherit;
+}
+
+.timeCard::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  border-radius: 8px;
+}
+
+.timeCard:hover { transform: translateY(-3px); }
+
+.timeCard.bullet::before { background: radial-gradient(ellipse at center, rgba(255, 107, 107, 0.08), transparent 70%); }
+.timeCard.blitz::before { background: radial-gradient(ellipse at center, rgba(78, 205, 196, 0.08), transparent 70%); }
+.timeCard.rapid::before { background: radial-gradient(ellipse at center, rgba(186, 85, 220, 0.08), transparent 70%); }
+.timeCard.unlimited::before { background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.04), transparent 70%); }
+
+.timeCard:hover::before { opacity: 1; }
+
+.timeCard.bullet:hover { border-color: rgba(255, 107, 107, 0.6); box-shadow: 0 4px 20px rgba(255, 107, 107, 0.2); }
+.timeCard.blitz:hover { border-color: rgba(78, 205, 196, 0.6); box-shadow: 0 4px 20px rgba(78, 205, 196, 0.2); }
+.timeCard.rapid:hover { border-color: rgba(186, 85, 220, 0.6); box-shadow: 0 4px 20px rgba(186, 85, 220, 0.2); }
+.timeCard.unlimited:hover { border-color: rgba(255, 255, 255, 0.3); box-shadow: 0 4px 20px rgba(255, 255, 255, 0.08); }
+
+.timeCard:active { transform: translateY(0) scale(0.97); }
+
+.timeValue {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.timeCard.bullet .timeValue { color: #ff6b6b; }
+.timeCard.blitz .timeValue { color: #4ecdc4; }
+.timeCard.rapid .timeValue { color: #ba55dc; }
+.timeCard.unlimited .timeValue { color: #888; font-size: 1.6rem; }
+
+.timeLabel {
+  font-size: 0.65rem;
+  color: #666;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.backBtn {
+  display: inline-block;
+  padding: 10px 24px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, rgba(15, 52, 96, 0.8), rgba(26, 26, 46, 0.9));
+  color: white;
+  border: 1px solid rgba(233, 69, 96, 0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.backBtn:hover {
+  border-color: rgba(233, 69, 96, 0.8);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+  .pageTitle { font-size: 1.3rem; }
+  .timeCard { min-width: 65px; padding: 14px 8px; }
+  .timeValue { font-size: 1.1rem; }
+}

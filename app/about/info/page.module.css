@@ -1,0 +1,518 @@
+.pageTitle {
+  color: #e94560;
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 30px rgba(233, 69, 96, 0.6), 0 0 60px rgba(233, 69, 96, 0.3);
+  letter-spacing: 4px;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  opacity: 0;
+  animation: titleEntry 1.2s cubic-bezier(0.16, 1, 0.3, 1) 1.5s forwards,
+             titleGlow 3s ease-in-out 2.7s infinite alternate;
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+}
+
+.pageContainer {
+  max-width: 900px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fadeIn 0.8s ease 2s forwards;
+}
+
+.filterTabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(233, 69, 96, 0.2);
+}
+
+.filterTab {
+  flex: 1;
+  padding: 0.7rem 0.5rem;
+  background: rgba(26, 26, 46, 0.8);
+  border: none;
+  color: #888;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: inherit;
+  border-right: 1px solid rgba(233, 69, 96, 0.1);
+}
+
+.filterTab:last-child {
+  border-right: none;
+}
+
+.filterTab:hover {
+  background: rgba(233, 69, 96, 0.1);
+  color: #ccc;
+}
+
+.filterTabActive {
+  background: rgba(233, 69, 96, 0.15);
+  color: #e94560;
+  box-shadow: inset 0 -2px 0 #e94560;
+}
+
+.tabContent {
+  display: none;
+  animation: contentFade 0.4s ease;
+}
+
+.tabContentActive {
+  display: block;
+}
+
+@keyframes contentFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.aboutContainer {
+  background: linear-gradient(145deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9));
+  border-radius: 15px;
+  padding: 2.5rem;
+  line-height: 1.8;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.4);
+  text-align: left;
+}
+
+.aboutContainer h2 {
+  color: #4ecdc4;
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(78, 205, 196, 0.3);
+  padding-bottom: 0.5rem;
+}
+
+.aboutContainer h2:first-child {
+  margin-top: 0;
+}
+
+.aboutContainer p {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: #ccc;
+}
+
+.aboutContainer ul {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0;
+}
+
+.aboutContainer li {
+  margin-bottom: 0.6rem;
+  padding-left: 1.5rem;
+  position: relative;
+  color: #ccc;
+}
+
+.aboutContainer li::before {
+  content: '\25B8';
+  position: absolute;
+  left: 0;
+  color: #4ecdc4;
+}
+
+.titleAccent {
+  color: #e94560;
+  text-align: center;
+  border-bottom: none !important;
+  letter-spacing: 2px;
+}
+
+.titleAccentLarge {
+  font-size: 1.8rem !important;
+}
+
+.titleAccentMid {
+  font-size: 1.5rem !important;
+}
+
+.titleAccentSmall {
+  font-size: 1.3rem !important;
+  margin-top: 0 !important;
+}
+
+.techList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+
+.techListSpaced {
+  margin-bottom: 1.5rem;
+}
+
+.techTag {
+  background: rgba(0, 255, 255, 0.08);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: rgba(0, 255, 255, 0.9);
+  transition: all 0.2s ease;
+}
+
+.techTag:hover {
+  background: rgba(0, 255, 255, 0.15);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.techDetailCard {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(78, 205, 196, 0.1);
+}
+
+.techDetailCard h3 {
+  color: #4ecdc4;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.techDetailCard p {
+  color: #999;
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+.devSection {
+  text-align: center;
+}
+
+.placeholderIcon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  display: block;
+  filter: drop-shadow(0 0 20px rgba(186, 85, 211, 0.5));
+}
+
+.devSection h2 {
+  color: rgba(186, 85, 211, 0.9);
+  text-align: center;
+  border-bottom: none;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+}
+
+.aiList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.aiCard {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+
+.aiCard:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.aiCardHeader {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.aiCardImg {
+  width: 160px;
+  min-width: 160px;
+  height: auto;
+  min-height: 220px;
+  object-fit: cover;
+  border-radius: 0;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.aiCardImgInner {
+  object-fit: cover;
+}
+
+.aiCardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 1.2rem 1.5rem;
+  justify-content: center;
+}
+
+.aiCardName {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.aiCardElo {
+  font-size: 0.85rem;
+  color: #f9ca24;
+  letter-spacing: 1px;
+}
+
+.aiCardRank {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.aiCardRankIcon {
+  font-size: 1.1rem;
+}
+
+.aiCardAffinityText {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+.aiCardBarWrap {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  height: 8px;
+  overflow: hidden;
+  margin-top: 6px;
+  max-width: 300px;
+}
+
+.aiCardBarFill {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.5s ease;
+}
+
+.aiCardStories {
+  display: flex;
+  gap: 6px;
+  padding: 0;
+  margin-top: 8px;
+}
+
+.storySlot {
+  flex: 1;
+  padding: 8px 6px;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.65rem;
+}
+
+.storySlotLocked {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  color: #555;
+  cursor: default;
+}
+
+.storySlotUnlocked {
+  background: rgba(233, 69, 96, 0.1);
+  border: 1px solid rgba(233, 69, 96, 0.3);
+  color: #e94560;
+}
+
+.storySlotUnlocked:hover {
+  background: rgba(233, 69, 96, 0.2);
+  border-color: rgba(233, 69, 96, 0.5);
+  box-shadow: 0 0 10px rgba(233, 69, 96, 0.2);
+}
+
+.storySlotIcon {
+  font-size: 0.75rem;
+  margin-bottom: 2px;
+}
+
+.storySlotLabel {
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 0.55rem;
+}
+
+.storySlotPts {
+  font-size: 0.5rem;
+  color: #666;
+  margin-top: 1px;
+}
+
+.backBtn {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+  color: rgba(0, 255, 255, 0.9);
+  border: 1px solid rgba(0, 255, 255, 0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fadeIn 0.8s ease 2.5s forwards;
+  display: inline-block;
+}
+
+.backBtn:hover {
+  transform: translateY(-3px);
+  background: rgba(0, 255, 255, 0.15);
+  border-color: rgba(0, 255, 255, 0.8);
+  box-shadow: 0 6px 25px rgba(0, 255, 255, 0.3);
+  color: #fff;
+}
+
+.storyModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.storyModalOverlayShow {
+  display: flex;
+}
+
+.storyModal {
+  background: linear-gradient(145deg, rgba(26, 26, 46, 0.98), rgba(22, 33, 62, 0.98));
+  border: 1px solid rgba(233, 69, 96, 0.3);
+  border-radius: 15px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 0 40px rgba(233, 69, 96, 0.2);
+}
+
+.storyModal h3 {
+  color: #e94560;
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+}
+
+.storyChapter {
+  font-size: 0.7rem;
+  color: #888;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.storyText {
+  color: #ccc;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+.storyModal button {
+  background: rgba(233, 69, 96, 0.15);
+  color: #e94560;
+  border: 1px solid rgba(233, 69, 96, 0.3);
+  border-radius: 8px;
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+}
+
+.storyModal button:hover {
+  background: rgba(233, 69, 96, 0.25);
+}
+
+@media (max-width: 600px) {
+  .pageTitle {
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+  }
+  .aboutContainer {
+    padding: 1.5rem;
+  }
+  .filterTab {
+    font-size: 0.65rem;
+    padding: 0.5rem 0.25rem;
+  }
+  .aiCardHeader {
+    flex-direction: column;
+  }
+  .aiCardImg {
+    width: 100%;
+    min-width: auto;
+    height: auto;
+    min-height: 180px;
+  }
+  .aiCardBarWrap {
+    max-width: 100%;
+  }
+  .aboutInfoMain {
+    padding: 1rem;
+    padding-top: 2rem;
+  }
+}
+
+/* ---------- Shared keyframes (redeclared so CSS Module scoping resolves names) ---------- */
+@keyframes vignetteFadeIn {
+  to { opacity: 1; }
+}
+@keyframes titleEntry {
+  0% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.8);
+    text-shadow: 0 0 80px rgba(233, 69, 96, 1), 0 0 160px rgba(233, 69, 96, 0.8), 0 0 240px rgba(233, 69, 96, 0.5);
+    letter-spacing: 20px;
+  }
+  60% { opacity: 1; transform: translateY(5px) scale(1.02); }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    letter-spacing: 4px;
+    text-shadow: 0 0 30px rgba(233, 69, 96, 0.6), 0 0 60px rgba(233, 69, 96, 0.3);
+  }
+}
+@keyframes titleGlow {
+  0% { text-shadow: 0 0 30px rgba(233, 69, 96, 0.6), 0 0 60px rgba(233, 69, 96, 0.3); }
+  100% { text-shadow: 0 0 40px rgba(233, 69, 96, 0.8), 0 0 80px rgba(233, 69, 96, 0.5), 0 0 100px rgba(233, 69, 96, 0.2); }
+}
+@keyframes fadeIn { to { opacity: 1; } }

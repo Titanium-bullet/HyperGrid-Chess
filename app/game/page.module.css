@@ -1,0 +1,31 @@
+.gamePage {
+  background: linear-gradient(135deg, #0c0c0c, #1a1a2e) !important;
+  position: relative;
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  padding-top: 1.2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: white;
+  text-align: center;
+}
+
+.gamePage :global(.game-container),
+.gamePage :global(h1),
+.gamePage :global(.controls-top),
+.gamePage :global(.controls-bottom),
+.gamePage :global(#status),
+.gamePage :global(.puzzle-bar),
+.gamePage :global(.puzzle-buttons),
+.gamePage :global(.ai-thinking),
+.gamePage :global(.opening-name) {
+  position: relative;
+  z-index: 1;
+}
+
+.gamePage :global(.modal-overlay) {
+  z-index: 1000;
+}
