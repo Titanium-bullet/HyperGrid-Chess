@@ -19,6 +19,7 @@ import {
   type ShopPowerup,
   type ShopGift,
 } from '@/lib/shop'
+import { asset } from '@/lib/assets'
 import { GIFT_EFFECTS, sendGift } from '@/lib/live-gift'
 import { HYPERGRID_INVENTORY_CHANGED, HYPERGRID_AFFINITY_CHANGED } from '@/lib/events'
 import styles from './page.module.css'
@@ -35,11 +36,11 @@ type AiSelectProfile = {
 }
 
 const AI_SELECT_PROFILES: AiSelectProfile[] = [
-  { id: '1', name: 'Nova', img: '/images/beginner.jpg', color: 'rgba(0,255,255,0.9)' },
-  { id: '2', name: 'Phantom', img: '/images/medium1.jpg', color: 'rgba(249,202,36,0.9)' },
-  { id: '3', name: 'Overlord', img: '/images/medium2.jpg', color: 'rgba(233,69,96,0.9)' },
-  { id: '4', name: 'HyperGrid', img: '/images/master.jpg', color: 'rgba(186,85,211,0.9)' },
-  { id: '5', name: 'Blind', img: '/images/blind.jpg', color: 'rgba(0,255,136,0.9)' },
+  { id: '1', name: 'Nova', img: asset('/images/beginner.jpg'), color: 'rgba(0,255,255,0.9)' },
+  { id: '2', name: 'Phantom', img: asset('/images/medium1.jpg'), color: 'rgba(249,202,36,0.9)' },
+  { id: '3', name: 'Overlord', img: asset('/images/medium2.jpg'), color: 'rgba(233,69,96,0.9)' },
+  { id: '4', name: 'HyperGrid', img: asset('/images/master.jpg'), color: 'rgba(186,85,211,0.9)' },
+  { id: '5', name: 'Blind', img: asset('/images/blind.jpg'), color: 'rgba(0,255,136,0.9)' },
 ]
 
 type ToastEntry = {

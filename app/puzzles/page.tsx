@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { CyberCanvas } from '@/components/CyberCanvas'
 import { ShopButton } from '@/components/ShopButton'
+import { asset } from '@/lib/assets'
 import { STORAGE_KEYS } from '@/lib/storage-keys'
 import { loadPuzzles, type PuzzlesData } from '@/lib/puzzles'
 import styles from './page.module.css'
@@ -104,7 +105,7 @@ export default function PuzzlesPage() {
           {!avatarError ? (
             <div className={styles.rivalAvatar}>
               <Image
-                src="/images/coach.jpg"
+                src={asset('/images/coach.jpg')}
                 alt="SPECTRE"
                 fill
                 sizes="64px"

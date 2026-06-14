@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { CyberCanvas } from '@/components/CyberCanvas'
+import { asset } from '@/lib/assets'
 import styles from './page.module.css'
 
 export default function PlayPage() {
@@ -13,7 +14,7 @@ export default function PlayPage() {
       <div className={styles.exploreGrid}>
         <Link href="/play/ai" className={`${styles.exploreCard} ${styles.span2x2}`}>
           <div className={`${styles.cardImage} ${styles.cyan}`}>
-            <Image src="/images/vsai.jpg" alt="vs AI" fill style={{ objectFit: 'cover' }} sizes="(max-width: 700px) 100vw, 520px" priority />
+            <Image src={asset('/images/vsai.jpg')} alt="vs AI" fill style={{ objectFit: 'cover' }} sizes="(max-width: 700px) 100vw, 520px" priority />
           </div>
           <div className={styles.cardLabel}>
             vs AI
@@ -23,7 +24,7 @@ export default function PlayPage() {
 
         <Link href="/play/time?mode=pvp" className={styles.exploreCard}>
           <div className={`${styles.cardImage} ${styles.purple}`}>
-            <Image src="/images/2players.jpg" alt="Two Player" fill style={{ objectFit: 'cover' }} sizes="(max-width: 700px) 100vw, 260px" />
+            <Image src={asset('/images/2players.jpg')} alt="Two Player" fill style={{ objectFit: 'cover' }} sizes="(max-width: 700px) 100vw, 260px" />
           </div>
           <div className={styles.cardLabel}>
             Two Player
@@ -33,7 +34,7 @@ export default function PlayPage() {
 
         <Link href="/puzzles" className={styles.exploreCard}>
           <div className={`${styles.cardImage} ${styles.gold}`}>
-            <Image src="/images/puzzle.jpg" alt="Puzzle Academy" fill style={{ objectFit: 'cover' }} sizes="(max-width: 700px) 100vw, 260px" />
+            <Image src={asset('/images/puzzle.jpg')} alt="Puzzle Academy" fill style={{ objectFit: 'cover' }} sizes="(max-width: 700px) 100vw, 260px" />
           </div>
           <div className={styles.cardLabel}>
             Puzzle Academy

@@ -7,6 +7,7 @@ import { Board, type BoardHandles, type ChessJsInstance, type ChessJsMove, type 
 import { CyberCanvas } from '@/components/CyberCanvas'
 import { ShopButton } from '@/components/ShopButton'
 import { playSound } from '@/lib/game-audio'
+import { asset } from '@/lib/assets'
 import { createStockfish, type EvalScore, type SkillLevel, type StockfishEngine } from '@/lib/engine'
 import {
   awardCoins,
@@ -52,11 +53,11 @@ const BASE_TIMEOUT: Record<Difficulty, number> = { '1': 300, '2': 1500, '3': 300
 const MAX_TIMEOUT: Record<Difficulty, number> = { '1': 500, '2': 3000, '3': 6000, '4': 10000, '5': 2000 }
 
 const AI_PROFILES: Record<Difficulty, { name: string; elo: string; img: string }> = {
-  '1': { name: 'Nova', elo: '~600 ELO', img: '/images/beginner.jpg' },
-  '2': { name: 'Phantom', elo: '~1400 ELO', img: '/images/medium1.jpg' },
-  '3': { name: 'Overlord', elo: '~1800 ELO', img: '/images/medium2.jpg' },
-  '4': { name: 'HyperGrid', elo: '3000+ ELO', img: '/images/master.jpg' },
-  '5': { name: 'Blind', elo: '~1000 ELO', img: '/images/blind.jpg' },
+  '1': { name: 'Nova', elo: '~600 ELO', img: asset('/images/beginner.jpg') },
+  '2': { name: 'Phantom', elo: '~1400 ELO', img: asset('/images/medium1.jpg') },
+  '3': { name: 'Overlord', elo: '~1800 ELO', img: asset('/images/medium2.jpg') },
+  '4': { name: 'HyperGrid', elo: '3000+ ELO', img: asset('/images/master.jpg') },
+  '5': { name: 'Blind', elo: '~1000 ELO', img: asset('/images/blind.jpg') },
 }
 
 const RIVAL_DIALOGUES: Record<string, string[]> = {
@@ -1386,7 +1387,7 @@ export function GameClient() {
               <div className="ai-profile-body">
                 <div className="ai-profile-img-wrap">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/images/coach.jpg" alt="SPECTRE" className="rival-profile-img" />
+                  <img src={asset('/images/coach.jpg')} alt="SPECTRE" className="rival-profile-img" />
                   <div className="ai-profile-placeholder" style={{ display: 'none' }}>
                     &#9818;
                   </div>
@@ -1404,7 +1405,7 @@ export function GameClient() {
               <div className="ai-profile-body">
                 <div className="ai-profile-img-wrap">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/images/coach.jpg" alt="SPECTRE" className="rival-profile-img" />
+                  <img src={asset('/images/coach.jpg')} alt="SPECTRE" className="rival-profile-img" />
                   <div className="ai-profile-placeholder" style={{ display: 'none' }}>
                     &#9818;
                   </div>

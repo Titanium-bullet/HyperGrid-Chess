@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CyberCanvas } from '@/components/CyberCanvas'
+import { asset } from '@/lib/assets'
 import { HYPERGRID_AFFINITY_CHANGED } from '@/lib/events'
 import { getAffinity, getRelationshipLevel } from '@/lib/shop'
 import styles from './page.module.css'
@@ -25,11 +26,11 @@ type StorySelection = {
 }
 
 const AI_PROFILES: AiProfile[] = [
-  { key: '1', name: 'Nova', elo: '~600 ELO', img: '/images/beginner.jpg', color: 'rgba(0,255,255,0.9)', thresholds: [10, 25, 50] },
-  { key: '2', name: 'Phantom', elo: '~1400 ELO', img: '/images/medium1.jpg', color: 'rgba(249,202,36,0.9)', thresholds: [20, 50, 100] },
-  { key: '3', name: 'Overlord', elo: '~1800 ELO', img: '/images/medium2.jpg', color: 'rgba(233,69,96,0.9)', thresholds: [30, 75, 150] },
-  { key: '4', name: 'HyperGrid', elo: '3000+ ELO', img: '/images/master.jpg', color: 'rgba(186,85,211,0.9)', thresholds: [50, 125, 250] },
-  { key: '5', name: 'Blind', elo: '~1000 ELO', img: '/images/blind.jpg', color: 'rgba(0,255,136,0.9)', thresholds: [20, 50, 100] },
+  { key: '1', name: 'Nova', elo: '~600 ELO', img: asset('/images/beginner.jpg'), color: 'rgba(0,255,255,0.9)', thresholds: [10, 25, 50] },
+  { key: '2', name: 'Phantom', elo: '~1400 ELO', img: asset('/images/medium1.jpg'), color: 'rgba(249,202,36,0.9)', thresholds: [20, 50, 100] },
+  { key: '3', name: 'Overlord', elo: '~1800 ELO', img: asset('/images/medium2.jpg'), color: 'rgba(233,69,96,0.9)', thresholds: [30, 75, 150] },
+  { key: '4', name: 'HyperGrid', elo: '3000+ ELO', img: asset('/images/master.jpg'), color: 'rgba(186,85,211,0.9)', thresholds: [50, 125, 250] },
+  { key: '5', name: 'Blind', elo: '~1000 ELO', img: asset('/images/blind.jpg'), color: 'rgba(0,255,136,0.9)', thresholds: [20, 50, 100] },
 ]
 
 const STORY_PLACEHOLDERS: Record<string, [string, string, string]> = {
