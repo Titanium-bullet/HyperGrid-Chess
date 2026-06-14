@@ -1,3 +1,5 @@
+import { asset } from './assets'
+
 export type Puzzle = {
   id: string;
   fen: string;
@@ -6,7 +8,6 @@ export type Puzzle = {
   difficulty: number;
   description: string;
 };
-
 export type Tier = {
   id: string;
   name: string;
@@ -28,7 +29,7 @@ export type PuzzlesData = {
 };
 
 export async function loadPuzzles(): Promise<PuzzlesData> {
-  const r = await fetch("/data/puzzles.json");
+  const r = await fetch(asset("/data/puzzles.json"));
   if (!r.ok) throw new Error("puzzles load failed");
   return r.json();
 }

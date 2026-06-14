@@ -1,5 +1,6 @@
-export type SkillLevel = 1 | 4 | 7 | 14 | 20
+import { asset } from './assets'
 
+export type SkillLevel = 1 | 4 | 7 | 14 | 20
 export type EvalScore =
   | { kind: 'cp'; value: number }
   | { kind: 'mate'; value: number }
@@ -20,7 +21,7 @@ export type StockfishEngine = {
   destroy: () => void
 }
 
-export function createStockfish(scriptUrl = '/engine/stockfish-18-lite-single.js'): StockfishEngine | null {
+export function createStockfish(scriptUrl = asset('/engine/stockfish-18-lite-single.js')): StockfishEngine | null {
   if (typeof window === 'undefined') return null
   let worker: Worker | null = null
   try {
