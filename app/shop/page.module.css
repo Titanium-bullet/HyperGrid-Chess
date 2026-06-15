@@ -117,6 +117,7 @@
 .filterTab.tabBoards { --tab-color: #4ecdc4; }
 .filterTab.tabPieces { --tab-color: #ffd700; }
 .filterTab.tabPowerups { --tab-color: #00ff88; }
+.filterTab.tabBackgrounds { --tab-color: #ba55dc; }
 .filterTab.tabGifts { --tab-color: #ff69b4; }
 
 .shopGrid {
@@ -274,6 +275,18 @@
   font-size: 2.8rem;
 }
 
+.previewBackground {
+  background:
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.5) 100%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 14px);
+}
+
+.previewGlyph {
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
 .shopGrid[data-cat='gifts'] .previewIcon {
   animation: heartPulse 1.5s ease-in-out infinite;
 }
@@ -411,6 +424,32 @@
   letter-spacing: 1px;
   text-transform: uppercase;
   font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+}
+
+.tierBadge {
+  display: inline-block;
+  font-size: 0.5rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+}
+
+.tierDivine {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(186, 85, 211, 0.18));
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.45);
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 10px rgba(186, 85, 211, 0.15);
+}
+
+.tierNormal {
+  background: rgba(120, 120, 130, 0.12);
+  color: #8a8a96;
+  border: 1px solid rgba(140, 140, 150, 0.25);
 }
 
 .backBtn {

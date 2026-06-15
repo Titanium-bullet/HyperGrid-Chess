@@ -4,6 +4,14 @@ import { HYPERGRID_COINS_CHANGED, HYPERGRID_INVENTORY_CHANGED, HYPERGRID_AFFINIT
 export type ShopBoard = { id: string; name: string; price: number; description: string; preview: [string, string] }
 export type ShopPiece = { id: string; name: string; price: number; description: string }
 export type ShopPowerup = { id: string; name: string; price: number; qty: number; description: string; icon: string }
+export type ShopBackground = {
+  id: string
+  name: string
+  price: number
+  description: string
+  preview: [string, string]
+  tier: 'normal' | 'divine'
+}
 export type ShopGift = {
   id: string
   name: string
@@ -18,21 +26,24 @@ export type ShopItems = {
   boards: ShopBoard[]
   pieces: ShopPiece[]
   powerups: ShopPowerup[]
+  backgrounds: ShopBackground[]
   gifts: ShopGift[]
 }
 
 export type Inventory = {
   equippedBoard: string
   equippedPieces: string
+  equippedBackground: string
   boards: string[]
   pieces: string[]
+  backgrounds: string[]
   powerups: Record<string, number>
 }
 
-export type Category = 'boards' | 'pieces' | 'powerups'
+export type Category = 'boards' | 'pieces' | 'powerups' | 'backgrounds'
 
 export type BuyResult =
-  | { success: true; item: ShopBoard | ShopPiece | ShopPowerup; coinsRemaining: number }
+  | { success: true; item: ShopBoard | ShopPiece | ShopPowerup | ShopBackground; coinsRemaining: number }
   | { success: false; reason: 'invalid_category' | 'not_found' | 'insufficient_coins' | 'already_owned' }
 
 export type GiftResult =
@@ -66,6 +77,11 @@ export const SHOP_ITEMS: ShopItems = {
     { id: 'legalMoves', name: 'Legal Move Highlights', price: 0, qty: 5, description: 'Highlights all legal moves on select', icon: '⭐' },
     { id: 'undoPack', name: 'Undo Pack', price: 0, qty: 5, description: 'Extra undo uses', icon: '↩' },
   ],
+  backgrounds: [
+    { id: 'bg-nexus', name: 'Nexus', price: 0, description: 'Cyber grid with pulses, sparks & twinkles', preview: ['#0a0a14', '#00ffff'], tier: 'divine' },
+    { id: 'bg-phantom', name: 'Spectra', price: 0, description: 'Hidden chess pieces revealed by the wave', preview: ['#0a0a14', '#ba55dc'], tier: 'divine' },
+    { id: 'bg-basic', name: 'Basic', price: 0, description: 'A plain static grid — no frills', preview: ['#0a0a14', '#555555'], tier: 'normal' },
+  ],
   gifts: [
     { id: 'coffee', name: 'Coffee', price: 0, affinity: 3, icon: '☕', description: 'A warm cup of comfort', universal: false },
     { id: 'rose', name: 'Rose', price: 0, affinity: 6, icon: '\u{1F339}', description: 'A symbol of affection', universal: false },
@@ -81,8 +97,10 @@ export const SHOP_ITEMS: ShopItems = {
 const DEFAULT_INVENTORY: Inventory = {
   equippedBoard: 'theme-cyber',
   equippedPieces: 'pixel',
+  equippedBackground: 'bg-nexus',
   boards: ['theme-cyber', 'theme-dark'],
   pieces: ['pixel'],
+  backgrounds: ['bg-nexus', 'bg-basic'],
   powerups: { bestMove: 0, evalBar: 0, legalMoves: 0, undoPack: 0 },
 }
 
@@ -142,12 +160,13 @@ export function owns(category: Category, id: string): boolean {
   const inv = getInventory()
   if (category === 'boards') return inv.boards.includes(id)
   if (category === 'pieces') return inv.pieces.includes(id)
+  if (category === 'backgrounds') return inv.backgrounds.includes(id)
   return false
 }
 
 export function buy(category: Category, id: string): BuyResult {
   const items =
-    category === 'boards' ? SHOP_ITEMS.boards : category === 'pieces' ? SHOP_ITEMS.pieces : category === 'powerups' ? SHOP_ITEMS.powerups : null
+    category === 'boards' ? SHOP_ITEMS.boards : category === 'pieces' ? SHOP_ITEMS.pieces : category === 'powerups' ? SHOP_ITEMS.powerups : category === 'backgrounds' ? SHOP_ITEMS.backgrounds : null
   if (!items) return { success: false, reason: 'invalid_category' }
   const item = items.find((i) => i.id === id)
   if (!item) return { success: false, reason: 'not_found' }
@@ -162,6 +181,10 @@ export function buy(category: Category, id: string): BuyResult {
     if (inv.pieces.includes(id)) return { success: false, reason: 'already_owned' }
     coins = addCoins(-item.price)
     inv.pieces.push(id)
+  } else if (category === 'backgrounds') {
+    if (inv.backgrounds.includes(id)) return { success: false, reason: 'already_owned' }
+    coins = addCoins(-item.price)
+    inv.backgrounds.push(id)
   } else if (category === 'powerups') {
     const pu = item as ShopPowerup
     coins = addCoins(-pu.price)
@@ -171,14 +194,17 @@ export function buy(category: Category, id: string): BuyResult {
   return { success: true, item, coinsRemaining: coins }
 }
 
-export function equip(category: 'boards' | 'pieces', id: string): boolean {
+export function equip(category: 'boards' | 'pieces' | 'backgrounds', id: string): boolean {
   const inv = getInventory()
   if (category === 'boards') {
     if (!inv.boards.includes(id)) return false
     inv.equippedBoard = id
-  } else {
+  } else if (category === 'pieces') {
     if (!inv.pieces.includes(id)) return false
     inv.equippedPieces = id
+  } else {
+    if (!inv.backgrounds.includes(id)) return false
+    inv.equippedBackground = id
   }
   saveInventory(inv)
   return true
@@ -198,6 +224,11 @@ export function getEquippedBoard(): string {
 
 export function getEquippedPieces(): string {
   return getInventory().equippedPieces || 'pixel'
+}
+
+export function getEquippedBackground(): string {
+  const inv = getInventory()
+  return inv.equippedBackground || 'bg-nexus'
 }
 
 export function getPieceUrl(piece: string): string {

@@ -17,6 +17,7 @@ import {
   type ShopBoard,
   type ShopPiece,
   type ShopPowerup,
+  type ShopBackground,
   type ShopGift,
 } from '@/lib/shop'
 import { asset } from '@/lib/assets'
@@ -26,7 +27,7 @@ import styles from './page.module.css'
 
 const isLuxury = (id: string): boolean => Boolean((GIFT_EFFECTS as Record<string, unknown>)[id])
 
-type Category = 'boards' | 'pieces' | 'powerups' | 'gifts'
+type Category = 'boards' | 'pieces' | 'powerups' | 'backgrounds' | 'gifts'
 
 type AiSelectProfile = {
   id: string
@@ -53,8 +54,10 @@ type ToastEntry = {
 const DEFAULT_INVENTORY: Inventory = {
   equippedBoard: 'theme-cyber',
   equippedPieces: 'pixel',
+  equippedBackground: 'bg-nexus',
   boards: ['theme-cyber', 'theme-dark'],
   pieces: ['pixel'],
+  backgrounds: ['bg-nexus', 'bg-basic'],
   powerups: { bestMove: 0, evalBar: 0, legalMoves: 0, undoPack: 0 },
 }
 
@@ -181,8 +184,8 @@ export default function ShopClient() {
   )
 
   const handleBuy = useCallback(
-    (item: ShopBoard | ShopPiece | ShopPowerup) => {
-      const result = buy(currentCategory as 'boards' | 'pieces' | 'powerups', item.id)
+    (item: ShopBoard | ShopPiece | ShopPowerup | ShopBackground) => {
+      const result = buy(currentCategory as 'boards' | 'pieces' | 'powerups' | 'backgrounds', item.id)
       if (result.success) {
         refreshInventory()
         showToast(`Purchased ${result.item.name}!`)
@@ -221,7 +224,7 @@ export default function ShopClient() {
 
   const handleEquip = useCallback(
     (id: string) => {
-      if (currentCategory !== 'boards' && currentCategory !== 'pieces') return
+      if (currentCategory !== 'boards' && currentCategory !== 'pieces' && currentCategory !== 'backgrounds') return
       if (equip(currentCategory, id)) {
         refreshInventory()
         showToast('Equipped!')
@@ -235,6 +238,7 @@ export default function ShopClient() {
       { id: 'boards', label: 'Boards', tabClass: styles.tabBoards },
       { id: 'pieces', label: 'Pieces', tabClass: styles.tabPieces },
       { id: 'powerups', label: 'Powerups', tabClass: styles.tabPowerups },
+      { id: 'backgrounds', label: 'Backgrounds', tabClass: styles.tabBackgrounds },
       { id: 'gifts', label: 'Gifts', tabClass: styles.tabGifts },
     ],
     []
@@ -302,6 +306,20 @@ export default function ShopClient() {
                 qty={inv.powerups[item.id] ?? 0}
                 coins={coins}
                 onBuy={() => handleBuy(item)}
+              />
+            ))}
+
+          {currentCategory === 'backgrounds' &&
+            SHOP_ITEMS.backgrounds.map((item, idx) => (
+              <BackgroundCard
+                key={item.id}
+                item={item}
+                idx={idx}
+                isOwned={inv.backgrounds.includes(item.id)}
+                isEquipped={inv.equippedBackground === item.id}
+                coins={coins}
+                onBuy={() => handleBuy(item)}
+                onEquip={() => handleEquip(item.id)}
               />
             ))}
 
@@ -490,6 +508,65 @@ function PieceCard({ item, idx, isOwned, isEquipped, coins, onBuy, onEquip }: Pi
         </div>
       </div>
       <div className={styles.cardName}>{item.name}</div>
+      <div className={styles.cardDesc}>{item.description}</div>
+      <div className={styles.cardFooter}>
+        <PriceTag price={item.price} />
+        {isEquipped ? (
+          <button
+            type="button"
+            disabled
+            aria-label="Equipped"
+            className={`${styles.cardBtn} ${styles.equippedBtn}`}
+          >
+            Equipped
+          </button>
+        ) : isOwned ? (
+          <button type="button" className={`${styles.cardBtn} ${styles.equip}`} onClick={onEquip}>
+            Equip
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={`${styles.cardBtn} ${styles.buy} ${coins < item.price ? styles.disabled : ''}`}
+            disabled={coins < item.price}
+            onClick={onBuy}
+          >
+            Buy
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+type BackgroundCardProps = {
+  item: ShopBackground
+  idx: number
+  isOwned: boolean
+  isEquipped: boolean
+  coins: number
+  onBuy: () => void
+  onEquip: () => void
+}
+
+function BackgroundCard({ item, idx, isOwned, isEquipped, coins, onBuy, onEquip }: BackgroundCardProps) {
+  const cardClass = `${styles.shopCard} ${isEquipped ? styles.equipped : isOwned ? styles.owned : ''}`
+  const accent = item.preview ? item.preview[1] : '#00ffff'
+  return (
+    <div className={cardClass} style={{ animationDelay: `${idx * 0.08}s` }}>
+      <div className={`${styles.cardPreview} ${styles.cardPreviewSolid} ${styles.previewBackground}`}>
+        <span className={styles.previewGlyph} style={{ color: accent, textShadow: `0 0 12px ${accent}` }}>
+          {'\u265E'}
+        </span>
+      </div>
+      <div className={styles.cardName}>
+        {item.name}
+        <span
+          className={`${styles.tierBadge} ${item.tier === 'divine' ? styles.tierDivine : styles.tierNormal}`}
+        >
+          {item.tier === 'divine' ? 'Divine' : 'Normal'}
+        </span>
+      </div>
       <div className={styles.cardDesc}>{item.description}</div>
       <div className={styles.cardFooter}>
         <PriceTag price={item.price} />
