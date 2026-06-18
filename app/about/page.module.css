@@ -113,6 +113,11 @@
   z-index: 1;
 }
 
+.cardPhoto {
+  z-index: 0;
+  filter: saturate(1.05);
+}
+
 .cardImage:global(.cyan) .cardIcon { filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.5)); }
 .cardImage:global(.purple) .cardIcon { filter: drop-shadow(0 0 15px rgba(186, 85, 211, 0.5)); }
 .cardImage:global(.gold) .cardIcon { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.5)); }

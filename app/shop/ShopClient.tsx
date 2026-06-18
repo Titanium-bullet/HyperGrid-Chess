@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import {
@@ -8,6 +9,8 @@ import {
   buy,
   buyGift,
   applyGift,
+  donate,
+  hasUnlimitedCard,
   equip,
   getCoins,
   getInventory,
@@ -20,14 +23,63 @@ import {
   type ShopBackground,
   type ShopGift,
 } from '@/lib/shop'
+import { getPaymentLabel, getProfile, type CardTier } from '@/lib/finance'
 import { asset } from '@/lib/assets'
 import { GIFT_EFFECTS, sendGift } from '@/lib/live-gift'
-import { HYPERGRID_INVENTORY_CHANGED, HYPERGRID_AFFINITY_CHANGED } from '@/lib/events'
+import { HYPERGRID_INVENTORY_CHANGED, HYPERGRID_AFFINITY_CHANGED, HYPERGRID_FINANCE_CHANGED } from '@/lib/events'
+import { FinanceOnboarding } from '@/components/finance/FinanceOnboarding'
+import { CardFace } from '@/components/finance/banking/CardFace'
 import styles from './page.module.css'
 
 const isLuxury = (id: string): boolean => Boolean((GIFT_EFFECTS as Record<string, unknown>)[id])
 
+let payAudioCtx: AudioContext | null = null
+
+function playPaySound() {
+  if (typeof window === 'undefined') return
+  try {
+    const w = window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext }
+    const AC = w.AudioContext || w.webkitAudioContext
+    if (!AC) return
+    let ctx = payAudioCtx
+    if (!ctx) {
+      ctx = new AC()
+      payAudioCtx = ctx
+    }
+    if (ctx.state === 'suspended') void ctx.resume()
+    const t0 = ctx.currentTime + 0.22
+    const hit = (freq: number, start: number, dur: number, peak: number) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(freq, start)
+      gain.gain.setValueAtTime(0.0001, start)
+      gain.gain.exponentialRampToValueAtTime(peak, start + 0.008)
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + dur)
+      osc.connect(gain).connect(ctx.destination)
+      osc.start(start)
+      osc.stop(start + dur + 0.02)
+    }
+    hit(990, t0, 0.18, 0.3)
+    hit(1480, t0 + 0.11, 0.22, 0.28)
+  } catch {
+    // audio unavailable — overlay still plays silently
+  }
+}
+
 type Category = 'boards' | 'pieces' | 'powerups' | 'backgrounds' | 'gifts'
+
+/** Close an overlay when Escape is pressed while it is visible. */
+function useEscapeClose(visible: boolean, onClose: () => void) {
+  useEffect(() => {
+    if (!visible) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [visible, onClose])
+}
 
 type AiSelectProfile = {
   id: string
@@ -42,6 +94,7 @@ const AI_SELECT_PROFILES: AiSelectProfile[] = [
   { id: '3', name: 'Overlord', img: asset('/images/medium2.jpg'), color: 'rgba(233,69,96,0.9)' },
   { id: '4', name: 'HyperGrid', img: asset('/images/master.jpg'), color: 'rgba(186,85,211,0.9)' },
   { id: '5', name: 'Blind', img: asset('/images/blind.jpg'), color: 'rgba(0,255,136,0.9)' },
+  { id: '6', name: 'Spectre', img: asset('/images/coach.jpg'), color: 'rgba(201,139,255,0.95)' },
 ]
 
 type ToastEntry = {
@@ -58,10 +111,11 @@ const DEFAULT_INVENTORY: Inventory = {
   boards: ['theme-cyber', 'theme-dark'],
   pieces: ['pixel'],
   backgrounds: ['bg-nexus', 'bg-basic'],
-  powerups: { bestMove: 0, evalBar: 0, legalMoves: 0, undoPack: 0 },
+  powerups: { bestMove: 0, evalBar: 0, legalMoves: 0, undoPack: 0, threatAlert: 0 },
 }
 
 export default function ShopClient() {
+  const router = useRouter()
   const [hydrated, setHydrated] = useState(false)
   const [currentCategory, setCurrentCategory] = useState<Category>('boards')
   const [coins, setCoins] = useState<number>(0)
@@ -72,10 +126,23 @@ export default function ShopClient() {
   const [giftModalVisible, setGiftModalVisible] = useState(false)
   const [aiSelectVisible, setAiSelectVisible] = useState(false)
   const [pendingGiftId, setPendingGiftId] = useState<string | null>(null)
+  const [donateVisible, setDonateVisible] = useState(false)
+  const [donateAmount, setDonateAmount] = useState<number>(0)
   const [affinities, setAffinities] = useState<Record<string, number>>({})
+  const [paymentLabel, setPaymentLabel] = useState<string>('')
+  const [unlimited, setUnlimited] = useState(false)
+  const [paySuccess, setPaySuccess] = useState<{ name: string; price: number } | null>(null)
+  const [payVisible, setPayVisible] = useState(false)
+  const [cardTier, setCardTier] = useState<CardTier | null>(null)
+  const [confirmItem, setConfirmItem] = useState<{
+    item: ShopBoard | ShopPiece | ShopPowerup | ShopBackground
+    name: string
+    price: number
+  } | null>(null)
 
   const toastIdRef = useRef(0)
   const giftHideTimerRef = useRef<number | null>(null)
+  const payHideTimerRef = useRef<number | null>(null)
   const timeoutsRef = useRef<Set<number>>(new Set())
 
   const refreshInventory = useCallback(() => {
@@ -93,22 +160,36 @@ export default function ShopClient() {
     setHydrated(true)
     setCoins(getCoins())
     setInv(getInventory())
+    setPaymentLabel(getPaymentLabel())
+    setUnlimited(hasUnlimitedCard())
+    setCardTier(getProfile().openedCard)
     const aff: Record<string, number> = {}
     for (const p of AI_SELECT_PROFILES) aff[p.id] = getAffinity(p.id)
     setAffinities(aff)
     const onInventoryChanged = () => refreshInventory()
     const onAffinityChanged = () => refreshAffinities()
+    const onFinanceChanged = () => {
+      setPaymentLabel(getPaymentLabel())
+      setUnlimited(hasUnlimitedCard())
+      setCardTier(getProfile().openedCard)
+    }
     window.addEventListener(HYPERGRID_INVENTORY_CHANGED, onInventoryChanged)
     window.addEventListener(HYPERGRID_AFFINITY_CHANGED, onAffinityChanged)
+    window.addEventListener(HYPERGRID_FINANCE_CHANGED, onFinanceChanged)
     const timeouts = timeoutsRef.current
     return () => {
       window.removeEventListener(HYPERGRID_INVENTORY_CHANGED, onInventoryChanged)
       window.removeEventListener(HYPERGRID_AFFINITY_CHANGED, onAffinityChanged)
+      window.removeEventListener(HYPERGRID_FINANCE_CHANGED, onFinanceChanged)
       for (const id of timeouts) window.clearTimeout(id)
       timeouts.clear()
       if (giftHideTimerRef.current !== null) {
         window.clearTimeout(giftHideTimerRef.current)
         giftHideTimerRef.current = null
+      }
+      if (payHideTimerRef.current !== null) {
+        window.clearTimeout(payHideTimerRef.current)
+        payHideTimerRef.current = null
       }
     }
   }, [refreshInventory, refreshAffinities])
@@ -160,10 +241,60 @@ export default function ShopClient() {
     setGiftModalVisible(false)
   }, [])
 
+  const showPaySuccess = useCallback((name: string, price: number) => {
+    if (payHideTimerRef.current !== null) {
+      window.clearTimeout(payHideTimerRef.current)
+      payHideTimerRef.current = null
+    }
+    playPaySound()
+    setPaySuccess({ name, price })
+    flushSync(() => {
+      setPayVisible(false)
+    })
+    requestAnimationFrame(() => {
+      setPayVisible(true)
+      const hideTimer = window.setTimeout(() => {
+        timeoutsRef.current.delete(hideTimer)
+        setPayVisible(false)
+        payHideTimerRef.current = null
+      }, 3200)
+      payHideTimerRef.current = hideTimer
+      timeoutsRef.current.add(hideTimer)
+    })
+  }, [])
+
+  const handlePayClick = useCallback(() => {
+    if (payHideTimerRef.current !== null) {
+      window.clearTimeout(payHideTimerRef.current)
+      payHideTimerRef.current = null
+    }
+    setPayVisible(false)
+  }, [])
+
   const closeAiSelect = useCallback(() => {
     setAiSelectVisible(false)
     setPendingGiftId(null)
   }, [])
+
+  const closeDonate = useCallback(() => {
+    setDonateVisible(false)
+    setDonateAmount(0)
+  }, [])
+
+  const handleDonate = useCallback(() => {
+    const res = donate(donateAmount)
+    if (res.success) {
+      const amt = donateAmount
+      setCoins(res.coinsRemaining)
+      setDonateVisible(false)
+      setDonateAmount(0)
+      showPaySuccess('Donation', amt)
+    } else if (res.reason === 'insufficient_coins') {
+      showToast('Not enough coins!', true)
+    } else {
+      showToast('Enter a valid amount.', true)
+    }
+  }, [donateAmount, showPaySuccess, showToast])
 
   const confirmGift = useCallback(
     (profile: AiSelectProfile) => {
@@ -183,43 +314,71 @@ export default function ShopClient() {
     [pendingGiftId, showGiftAnimation, refreshAffinities]
   )
 
-  const handleBuy = useCallback(
+  const doBuy = useCallback(
     (item: ShopBoard | ShopPiece | ShopPowerup | ShopBackground) => {
       const result = buy(currentCategory as 'boards' | 'pieces' | 'powerups' | 'backgrounds', item.id)
       if (result.success) {
         refreshInventory()
-        showToast(`Purchased ${result.item.name}!`)
+        showPaySuccess(result.item.name, item.price)
       } else if (result.reason === 'insufficient_coins') {
         showToast('Not enough coins!', true)
       } else if (result.reason === 'already_owned') {
         showToast('Already owned!', true)
       }
     },
-    [currentCategory, refreshInventory, showToast]
+    [currentCategory, refreshInventory, showToast, showPaySuccess]
   )
+
+  const requestBuy = useCallback(
+    (item: ShopBoard | ShopPiece | ShopPowerup | ShopBackground) => {
+      if (item.price <= 0) {
+        doBuy(item)
+        return
+      }
+      setConfirmItem({ item, name: item.name, price: item.price })
+    },
+    [doBuy]
+  )
+
+  const confirmPurchase = useCallback(() => {
+    if (!confirmItem) return
+    const item = confirmItem.item
+    setConfirmItem(null)
+    doBuy(item)
+  }, [confirmItem, doBuy])
+
+  useEscapeClose(giftModalVisible, handleGiftModalClick)
+  useEscapeClose(aiSelectVisible, closeAiSelect)
+  useEscapeClose(donateVisible, closeDonate)
+  useEscapeClose(Boolean(confirmItem), () => setConfirmItem(null))
 
   const handleBuyGift = useCallback(
     (item: ShopGift) => {
       const result = buyGift(item.id)
       if (result.success) {
         setCoins(result.coinsRemaining)
-        if (result.item.universal) {
-          applyGift(item.id, '1')
-          if (isLuxury(item.id)) {
-            sendGift({ id: item.id, sender: 'You' })
+        showPaySuccess(item.name, item.price)
+        const afterPay = () => {
+          if (result.item.universal) {
+            applyGift(item.id, '1')
+            if (isLuxury(item.id)) {
+              sendGift({ id: item.id, sender: 'You' })
+            } else {
+              showGiftAnimation(result.item.affinity, 'All AI')
+            }
+            refreshAffinities()
           } else {
-            showGiftAnimation(result.item.affinity, 'All AI')
+            setPendingGiftId(item.id)
+            setAiSelectVisible(true)
           }
-          refreshAffinities()
-        } else {
-          setPendingGiftId(item.id)
-          setAiSelectVisible(true)
         }
+        const t = window.setTimeout(afterPay, 3200)
+        timeoutsRef.current.add(t)
       } else if (result.reason === 'insufficient_coins') {
         showToast('Not enough coins!', true)
       }
     },
-    [showGiftAnimation, showToast, refreshAffinities]
+    [showPaySuccess, showGiftAnimation, showToast, refreshAffinities]
   )
 
   const handleEquip = useCallback(
@@ -244,13 +403,27 @@ export default function ShopClient() {
     []
   )
 
+  const affordCoins = unlimited ? Number.POSITIVE_INFINITY : coins
+
   return (
     <>
+      <FinanceOnboarding />
       <div className={styles.pageTitle}>SHOP</div>
-      <div className={styles.coinDisplay}>
+      <button
+        type="button"
+        className={styles.paymentCoinBar}
+        onClick={() => router.push('/finance/banking')}
+        title="Open bank"
+      >
         <span className={styles.coinIcon}>{'\u{1FA99}'}</span>
-        <span className={styles.coinAmount}>{hydrated ? coins : 0}</span>
-      </div>
+        <span className={styles.coinAmount} aria-live="polite">
+          {hydrated ? coins : <span className={styles.skeleton}>·····</span>}
+        </span>
+        <span className={styles.barDivider} />
+        <span className={styles.barLabel}>
+          Payment method {hydrated ? paymentLabel : <span className={styles.skeleton}>·········</span>}
+        </span>
+      </button>
 
       <div className={styles.pageContainer}>
         <div className={styles.filterTabs}>
@@ -277,8 +450,8 @@ export default function ShopClient() {
                 idx={idx}
                 isOwned={inv.boards.includes(item.id)}
                 isEquipped={inv.equippedBoard === item.id}
-                coins={coins}
-                onBuy={() => handleBuy(item)}
+                coins={affordCoins}
+                onBuy={() => requestBuy(item)}
                 onEquip={() => handleEquip(item.id)}
               />
             ))}
@@ -291,8 +464,8 @@ export default function ShopClient() {
                 idx={idx}
                 isOwned={inv.pieces.includes(item.id)}
                 isEquipped={inv.equippedPieces === item.id}
-                coins={coins}
-                onBuy={() => handleBuy(item)}
+                coins={affordCoins}
+                onBuy={() => requestBuy(item)}
                 onEquip={() => handleEquip(item.id)}
               />
             ))}
@@ -304,8 +477,8 @@ export default function ShopClient() {
                 item={item}
                 idx={idx}
                 qty={inv.powerups[item.id] ?? 0}
-                coins={coins}
-                onBuy={() => handleBuy(item)}
+                coins={affordCoins}
+                onBuy={() => requestBuy(item)}
               />
             ))}
 
@@ -317,8 +490,8 @@ export default function ShopClient() {
                 idx={idx}
                 isOwned={inv.backgrounds.includes(item.id)}
                 isEquipped={inv.equippedBackground === item.id}
-                coins={coins}
-                onBuy={() => handleBuy(item)}
+                coins={affordCoins}
+                onBuy={() => requestBuy(item)}
                 onEquip={() => handleEquip(item.id)}
               />
             ))}
@@ -329,10 +502,21 @@ export default function ShopClient() {
                 key={item.id}
                 item={item}
                 idx={idx}
-                coins={coins}
+                coins={affordCoins}
                 onBuy={() => handleBuyGift(item)}
               />
             ))}
+
+          {currentCategory === 'gifts' && (
+            <DonateCard
+              idx={SHOP_ITEMS.gifts.length}
+              coins={coins}
+              onDonate={() => {
+                setDonateAmount(0)
+                setDonateVisible(true)
+              }}
+            />
+          )}
         </div>
       </div>
 
@@ -361,6 +545,9 @@ export default function ShopClient() {
       <div
         className={`${styles.giftModalOverlay} ${giftModalVisible ? styles.show : ''}`}
         onClick={handleGiftModalClick}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Gift received"
       >
         <div className={styles.giftModalContent}>
           <div className={styles.giftBoxWrap}>
@@ -383,6 +570,9 @@ export default function ShopClient() {
         onClick={(e) => {
           if (e.target === e.currentTarget) closeAiSelect()
         }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Choose a recipient"
       >
         <div className={styles.aiSelectContent}>
           <h3 className={styles.aiSelectTitle}>Gift to who?</h3>
@@ -416,6 +606,134 @@ export default function ShopClient() {
             Cancel
           </button>
         </div>
+      </div>
+
+      <div
+        className={`${styles.aiSelectOverlay} ${donateVisible ? styles.show : ''}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) closeDonate()
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Donate to charity"
+      >
+        <div className={styles.aiSelectContent}>
+          <h3 className={styles.aiSelectTitle}>Donate to Charity ❤️</h3>
+          <p className={styles.donateBalance}>Balance: {coins.toLocaleString()} 🪙</p>
+          <div className={styles.donateRow}>
+            <input
+              className={styles.donateInput}
+              type="number"
+              min={1}
+              max={coins}
+              value={donateAmount}
+              onChange={(e) => setDonateAmount(Math.max(0, Math.floor(Number(e.target.value) || 0)))}
+            />
+          </div>
+          <div className={styles.donateQuick}>
+            {[0.25, 0.5, 1].map((f) => (
+              <button
+                key={f}
+                type="button"
+                className={styles.aiSelectCancel}
+                style={{ marginTop: 0 }}
+                onClick={() => setDonateAmount(Math.max(0, Math.floor(coins * f)))}
+              >
+                {f === 1 ? 'All' : `${f * 100}%`}
+              </button>
+            ))}
+          </div>
+          <div className={styles.donateActions}>
+            <button
+              type="button"
+              className={styles.aiSelectCancel}
+              style={{ marginTop: 0 }}
+              onClick={closeDonate}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={`${styles.cardBtn} ${styles.buy}`}
+              disabled={donateAmount <= 0 || donateAmount > coins}
+              onClick={handleDonate}
+            >
+              Donate
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className={`${styles.payOverlay} ${payVisible ? styles.show : ''}`}
+        onClick={handlePayClick}
+      >
+        {paySuccess && (
+          <div
+            className={`${styles.paySheet} ${unlimited ? styles.payTheme : ''}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.payMethodRow}>
+              {cardTier ? (
+                <div className={styles.payCardWrap}>
+                  <CardFace tier={cardTier} holder={getProfile().name} chip="small" showLock={false} />
+                </div>
+              ) : (
+                <div className={styles.payMethod}>{hydrated ? paymentLabel || 'Apple Pay' : 'Apple Pay'}</div>
+              )}
+            </div>
+            <div className={styles.payCheck}>
+              <svg className={styles.payCheckSvg} viewBox="0 0 80 80" aria-hidden="true">
+                <circle className={styles.payCheckCircle} cx="40" cy="40" r="34" />
+                <path className={styles.payCheckMark} d="M24 41 L36 53 L57 30" pathLength={1} />
+              </svg>
+            </div>
+            <div className={styles.payLabel}>Paid by Titanium-pay&reg;</div>
+          </div>
+        )}
+      </div>
+
+      <div
+        className={`${styles.aiSelectOverlay} ${confirmItem ? styles.show : ''}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) setConfirmItem(null)
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Confirm purchase"
+      >
+        {confirmItem && (
+          <div className={styles.aiSelectContent}>
+            <h3 className={styles.aiSelectTitle}>Confirm Purchase</h3>
+            <p className={styles.donateBalance}>
+              Buy <strong style={{ color: '#fff' }}>{confirmItem.name}</strong> for{' '}
+              <span style={{ color: '#ffd700' }}>
+                {confirmItem.price.toLocaleString()} 🪙
+              </span>
+              ?
+            </p>
+            <p className={styles.mutedSmall} style={{ marginTop: '-0.2rem' }}>
+              Balance after: {Math.max(0, coins - confirmItem.price).toLocaleString()} 🪙
+            </p>
+            <div className={styles.donateActions}>
+              <button
+                type="button"
+                className={styles.aiSelectCancel}
+                style={{ marginTop: 0 }}
+                onClick={() => setConfirmItem(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={`${styles.cardBtn} ${styles.buy}`}
+                onClick={confirmPurchase}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   )
@@ -552,11 +870,15 @@ type BackgroundCardProps = {
 function BackgroundCard({ item, idx, isOwned, isEquipped, coins, onBuy, onEquip }: BackgroundCardProps) {
   const cardClass = `${styles.shopCard} ${isEquipped ? styles.equipped : isOwned ? styles.owned : ''}`
   const accent = item.preview ? item.preview[1] : '#00ffff'
+  const glyph = item.id === 'bg-phantom' ? '\u265A' : item.id === 'bg-arcade' ? '\u265C' : '\u265E'
   return (
     <div className={cardClass} style={{ animationDelay: `${idx * 0.08}s` }}>
-      <div className={`${styles.cardPreview} ${styles.cardPreviewSolid} ${styles.previewBackground}`}>
+      <div
+        className={`${styles.cardPreview} ${styles.cardPreviewSolid} ${styles.previewBackground}`}
+        data-bg={item.id}
+      >
         <span className={styles.previewGlyph} style={{ color: accent, textShadow: `0 0 12px ${accent}` }}>
-          {'\u265E'}
+          {glyph}
         </span>
       </div>
       <div className={styles.cardName}>
@@ -607,27 +929,37 @@ type PowerupCardProps = {
 }
 
 function PowerupCard({ item, idx, qty, coins, onBuy }: PowerupCardProps) {
+  const owned = qty > 0
   return (
-    <div className={styles.shopCard} style={{ animationDelay: `${idx * 0.08}s` }}>
+    <div className={`${styles.shopCard} ${owned ? styles.owned : ''}`} style={{ animationDelay: `${idx * 0.08}s` }}>
       <div className={`${styles.cardPreview} ${styles.cardPreviewSolid}`}>
         <span className={styles.previewIcon}>{item.icon}</span>
       </div>
       <div className={styles.cardName}>{item.name}</div>
       <div className={styles.cardDesc}>{item.description}</div>
       <div className={styles.powerupQty}>
-        Owned: {qty}
-        {item.qty ? ` (buys +${item.qty})` : ''}
+        {owned ? (
+          <span className={styles.powerupActive}>&#10003; Active</span>
+        ) : (
+          <span>Not active</span>
+        )}
       </div>
       <div className={styles.cardFooter}>
         <PriceTag price={item.price} />
-        <button
-          type="button"
-          className={`${styles.cardBtn} ${styles.buy} ${coins < item.price ? styles.disabled : ''}`}
-          disabled={coins < item.price}
-          onClick={onBuy}
-        >
-          Buy
-        </button>
+        {owned ? (
+          <button type="button" className={`${styles.cardBtn} ${styles.ownedBtn}`} disabled>
+            &#10003; Owned
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={`${styles.cardBtn} ${styles.buy} ${coins < item.price ? styles.disabled : ''}`}
+            disabled={coins < item.price}
+            onClick={onBuy}
+          >
+            {item.price === 0 ? 'Activate' : 'Buy'}
+          </button>
+        )}
       </div>
     </div>
   )
@@ -663,6 +995,30 @@ function GiftCard({ item, idx, coins, onBuy }: GiftCardProps) {
           onClick={onBuy}
         >
           Buy
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function DonateCard({ idx, coins, onDonate }: { idx: number; coins: number; onDonate: () => void }) {
+  return (
+    <div className={styles.shopCard} style={{ animationDelay: `${idx * 0.08}s` }}>
+      <div className={`${styles.cardPreview} ${styles.cardPreviewSolid}`}>
+        <span className={styles.previewIcon}>❤️</span>
+      </div>
+      <div className={styles.cardName}>Donate to Charity</div>
+      <div className={styles.cardDesc}>Give any amount to those in need</div>
+      <div className={styles.powerupQty}>No limit · pure goodwill</div>
+      <div className={styles.cardFooter}>
+        <span className={`${styles.cardPrice} ${styles.free}`}>Any amount</span>
+        <button
+          type="button"
+          className={`${styles.cardBtn} ${styles.buy} ${coins <= 0 ? styles.disabled : ''}`}
+          disabled={coins <= 0}
+          onClick={onDonate}
+        >
+          Donate
         </button>
       </div>
     </div>

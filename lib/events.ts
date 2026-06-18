@@ -27,6 +27,13 @@ export const HYPERGRID_AFFINITY_CHANGED = "hypergrid:affinity-changed" as const;
  */
 export const HYPERGRID_ACHIEVEMENT_TOAST = "hypergrid:achievement-toast" as const;
 
+/**
+ * Dispatched on `window` whenever the player's finance profile (name, opened
+ * card, onboarding flag) or finance state (loans, investments, insurance
+ * policies) changes. Listeners should re-read finance state from storage.
+ */
+export const HYPERGRID_FINANCE_CHANGED = "hypergrid:finance-changed" as const;
+
 export type AchievementToastDetail = {
   name: string;
   tier: "Bronze" | "Silver" | "Gold";

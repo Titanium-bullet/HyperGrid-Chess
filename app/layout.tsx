@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Orbitron } from 'next/font/google'
+import { Orbitron, Inter } from 'next/font/google'
 import './globals.css'
 import { AchievementToastHost } from '@/components/AchievementToast'
 
@@ -7,6 +7,13 @@ const orbitron = Orbitron({
   subsets: ['latin'],
   weight: ['400', '700', '900'],
   variable: '--font-orbitron',
+  display: 'swap',
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '800'],
+  variable: '--font-inter',
   display: 'swap',
 })
 
@@ -25,8 +32,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={orbitron.variable}>
-      <body className={orbitron.variable}>
+    <html lang="en" className={`${orbitron.variable} ${inter.variable}`}>
+      <body className={`${orbitron.variable} ${inter.variable}`}>
         {children}
         <AchievementToastHost />
       </body>

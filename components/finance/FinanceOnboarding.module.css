@@ -1,0 +1,209 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 4, 12, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  width: 100%;
+  max-width: 460px;
+  background: linear-gradient(160deg, rgba(20, 22, 40, 0.96), rgba(12, 14, 28, 0.98));
+  border: 1px solid rgba(0, 255, 255, 0.35);
+  border-radius: 16px;
+  box-shadow: 0 0 50px rgba(0, 255, 255, 0.18), 0 20px 60px rgba(0, 0, 0, 0.6);
+  padding: 1.8rem 1.8rem 1.6rem;
+  text-align: center;
+  color: #fff;
+  position: relative;
+  transform: translateY(16px) scale(0.97);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.show .modal {
+  transform: translateY(0) scale(1);
+}
+
+.brand {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 4px;
+  color: rgba(0, 255, 255, 0.7);
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+.title {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin: 0 0 0.4rem;
+  background: linear-gradient(90deg, #00ffff, #ba55dc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.62);
+  margin: 0 0 1.3rem;
+  line-height: 1.5;
+}
+
+.field {
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 0.4rem;
+}
+
+.input,
+.select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.7rem 0.85rem;
+  background: rgba(10, 12, 24, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  outline: none;
+}
+
+.input:focus,
+.select:focus {
+  border-color: rgba(0, 255, 255, 0.7);
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.12);
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, rgba(0, 255, 255, 0.7) 50%),
+    linear-gradient(135deg, rgba(0, 255, 255, 0.7) 50%, transparent 50%);
+  background-position: calc(100% - 18px) center, calc(100% - 12px) center;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 2.2rem;
+}
+
+.select option {
+  background: #11131f;
+  color: #fff;
+}
+
+.previewWrap {
+  margin: 0.4rem 0 1.2rem;
+  max-width: 320px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.preview {
+  height: 92px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.1rem;
+  color: #fff;
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: background 0.4s ease;
+}
+
+.previewDim {
+  background: linear-gradient(135deg, #2a2c3d, #1a1c2a);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.previewGlyph {
+  font-size: 1.6rem;
+}
+
+.previewMeta {
+  text-align: right;
+}
+
+.previewPay {
+  font-size: 0.68rem;
+  letter-spacing: 2px;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+.btnRow {
+  display: flex;
+  gap: 0.7rem;
+  margin-top: 0.4rem;
+}
+
+.btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: all 0.25s ease;
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, #00ffff, #4ecdc4);
+  color: #04121a;
+  box-shadow: 0 6px 20px rgba(0, 255, 255, 0.28);
+}
+
+.btnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 26px rgba(0, 255, 255, 0.45);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btnGhost {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.btnGhost:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}

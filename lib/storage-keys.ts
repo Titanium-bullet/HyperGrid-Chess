@@ -8,6 +8,8 @@ export const STORAGE_KEYS = {
   SOLVED_NO_HINT: 'hypergrid_solved_no_hint',
   TRIAL_UNLOCKED: 'hypergrid_trial_unlocked',
   SOUND: 'hypergrid_sound',
+  FINANCE_PROFILE: 'hypergrid_finance_profile',
+  FINANCE_STATE: 'hypergrid_finance_state',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]

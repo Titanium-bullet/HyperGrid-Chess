@@ -1,5 +1,66 @@
 /* Shop page — preserves all legacy shop.html visual behavior 1:1 */
 
+.paymentCoinBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(0, 255, 255, 0.06));
+  border: 1px solid rgba(255, 215, 0, 0.32);
+  border-radius: 24px;
+  padding: 10px 22px;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fadeIn 0.8s ease 2s forwards;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.08);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.paymentCoinBar:hover {
+  border-color: rgba(255, 215, 0, 0.55);
+  box-shadow: 0 0 28px rgba(255, 215, 0, 0.16);
+}
+
+.paymentCoinBar:active {
+  transform: scale(0.985);
+}
+
+.coinIcon {
+  font-size: 1.4rem;
+  animation: coinSpin 3s ease-in-out infinite;
+}
+
+@keyframes coinSpin {
+  0%, 100% { transform: rotateY(0deg); }
+  50% { transform: rotateY(180deg); }
+}
+
+.coinAmount {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffd700;
+  letter-spacing: 1px;
+}
+
+.barDivider {
+  width: 1px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.barLabel {
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
+  color: rgba(0, 255, 255, 0.85);
+}
+
 .pageTitle {
   font-family: var(--font-orbitron), 'Orbitron', sans-serif;
   font-size: 2.4rem;
@@ -28,40 +89,6 @@
 @keyframes titleShimmerShop {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
-}
-
-.coinDisplay {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 215, 0, 0.04));
-  border: 1px solid rgba(255, 215, 0, 0.35);
-  border-radius: 24px;
-  padding: 10px 22px;
-  margin-bottom: 1.5rem;
-  position: relative;
-  z-index: 1;
-  opacity: 0;
-  animation: fadeIn 0.8s ease 2s forwards;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.08);
-}
-
-.coinIcon {
-  font-size: 1.4rem;
-  animation: coinSpin 3s ease-in-out infinite;
-}
-
-@keyframes coinSpin {
-  0%, 100% { transform: rotateY(0deg); }
-  50% { transform: rotateY(180deg); }
-}
-
-.coinAmount {
-  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #ffd700;
-  letter-spacing: 1px;
 }
 
 .pageContainer {
@@ -119,6 +146,86 @@
 .filterTab.tabPowerups { --tab-color: #00ff88; }
 .filterTab.tabBackgrounds { --tab-color: #ba55dc; }
 .filterTab.tabGifts { --tab-color: #ff69b4; }
+
+.mutedSmall {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.78rem;
+}
+
+.skeleton {
+  display: inline-block;
+  letter-spacing: 2px;
+  color: transparent;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+  user-select: none;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---------------- Per-background rich previews ---------------- */
+.previewBackground[data-bg='bg-nexus']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(0, 255, 255, 0.35), transparent 40%),
+    radial-gradient(circle at 70% 65%, rgba(0, 255, 255, 0.22), transparent 45%);
+  animation: bgPulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.previewBackground[data-bg='bg-phantom'] {
+  background:
+    radial-gradient(ellipse at center, rgba(186, 85, 211, 0.12) 0%, rgba(0, 0, 0, 0.55) 100%),
+    repeating-linear-gradient(0deg, rgba(186, 85, 211, 0.05) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(90deg, rgba(186, 85, 211, 0.05) 0 1px, transparent 1px 14px);
+}
+
+.previewBackground[data-bg='bg-phantom'] .previewGlyph {
+  animation: ghostFade 3.5s ease-in-out infinite;
+}
+
+.previewBackground[data-bg='bg-arcade']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 45, 149, 0.12) 0 2px,
+    transparent 2px 4px
+  );
+  animation: arcadeScan 2s linear infinite;
+  pointer-events: none;
+}
+
+.previewBackground[data-bg='bg-basic'] {
+  opacity: 0.7;
+}
+
+.previewBackground[data-bg='bg-basic'] .previewGlyph {
+  opacity: 0.4;
+}
+
+@keyframes bgPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@keyframes ghostFade {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+
+@keyframes arcadeScan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
 
 .shopGrid {
   display: grid;
@@ -409,6 +516,21 @@
   font-size: 0.7rem;
   color: #777;
   margin-bottom: 0.5rem;
+}
+
+.powerupActive {
+  color: #00ff88;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+.ownedBtn {
+  background: rgba(0, 255, 136, 0.12) !important;
+  border-color: rgba(0, 255, 136, 0.5) !important;
+  color: #00ff88 !important;
+  cursor: default !important;
+  opacity: 0.85;
 }
 
 .giftCardBadge {
@@ -811,10 +933,196 @@
   color: #aaa;
 }
 
+/* ---- Donate to Charity modal ---- */
+.donateBalance {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  margin: 0 0 0.6rem;
+}
+
+.donateRow {
+  display: flex;
+  margin: 0.4rem 0 0.8rem;
+}
+
+.donateInput {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 105, 180, 0.35);
+  border-radius: 8px;
+  color: #fff;
+  padding: 0.6rem 0.8rem;
+  font-size: 1rem;
+  outline: none;
+  font-family: inherit;
+}
+
+.donateInput:focus {
+  border-color: rgba(255, 105, 180, 0.7);
+}
+
+.donateQuick {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.8rem;
+}
+
+.donateActions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  align-items: center;
+}
+
 @media (max-width: 600px) {
   .pageTitle { font-size: 1.6rem; letter-spacing: 2px; }
   .shopGrid { grid-template-columns: 1fr; }
   .filterTab { font-size: 0.6rem; padding: 0.5rem 0.2rem; letter-spacing: 0.5px; }
+}
+
+/* ---- Apple-Pay-style purchase success overlay ---- */
+.payOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.payOverlay.show { display: flex; }
+
+.paySheet {
+  --pay-check: #34c759;
+  background: #000;
+  border-radius: 22px;
+  padding: 1.5rem 1.5rem 1.8rem;
+  width: min(340px, 92vw);
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transform: scale(0.85) translateY(24px);
+  opacity: 0;
+}
+
+.paySheet.payTheme {
+  --pay-check: #c98bff;
+}
+
+.payOverlay.show .paySheet {
+  animation: paySheetIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes paySheetIn {
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.payMethod {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.78rem;
+  letter-spacing: 0.5px;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  margin-bottom: 1.2rem;
+  opacity: 0;
+}
+
+.payMethodRow {
+  margin-bottom: 3.8rem;
+}
+
+.payCardWrap {
+  width: 100%;
+  max-width: 100%;
+  opacity: 0;
+}
+
+.payOverlay.show .payCardWrap {
+  animation: payFadeUp 0.45s 0.1s ease-out forwards;
+}
+
+.payCheck {
+  width: 96px;
+  margin: 0 auto 1.1rem;
+  transform: scale(0);
+}
+
+.payOverlay.show .payCheck {
+  animation: payCheckPop 0.5s 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes payCheckPop {
+  to { transform: scale(1); }
+}
+
+.payCheckSvg {
+  width: 96px;
+  height: 96px;
+  display: block;
+}
+
+.payCheckCircle {
+  fill: transparent;
+  stroke: var(--pay-check);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 214;
+  stroke-dashoffset: 214;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
+.payOverlay.show .payCheckCircle {
+  animation: payCircleDraw 0.5s 0.3s ease-out forwards,
+    payCircleFill 0.4s 0.7s ease-out forwards;
+}
+
+@keyframes payCircleDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes payCircleFill {
+  to { fill: var(--pay-check); }
+}
+
+.payCheckMark {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.payOverlay.show .payCheckMark {
+  animation: payMarkDraw 0.35s 0.78s ease-out forwards;
+}
+
+@keyframes payMarkDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+.payLabel {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0;
+}
+
+.payOverlay.show .payMethod { animation: payFadeUp 0.4s 0.12s ease-out forwards; }
+.payOverlay.show .payLabel { animation: payFadeUp 0.4s 1s ease-out forwards; }
+
+@keyframes payFadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ---------- Shared keyframes (redeclared so CSS Module scoping resolves names) ---------- */

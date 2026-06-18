@@ -113,6 +113,10 @@ export function CyberCanvas({ skipIntro = false }: CyberCanvasProps) {
     let scanCooldown = 1500
     let animId: number | null = null
     let paused = false
+    let arcadeInit = false
+    let arcadeStars: { x: number; y: number; s: number; p: number }[] = []
+    let arcadeMarquee: { x: number; y: number; on: boolean; next: number; hue: number }[] = []
+    const ARCADE_PIX = 56
     const startTime = skipIntro ? Date.now() - 10000 : Date.now()
     const glyphFadeStart = 4000
 
@@ -197,6 +201,7 @@ export function CyberCanvas({ skipIntro = false }: CyberCanvasProps) {
       W = c.width = window.innerWidth
       H = c.height = window.innerHeight
       buildGrid()
+      arcadeInit = false
     }
     resize()
     twinkleIdx = Math.floor(Math.random() * verts.length)
@@ -341,6 +346,119 @@ export function CyberCanvas({ skipIntro = false }: CyberCanvasProps) {
         return
       }
 
+      // ---------- Arcade theme: retro CRT cabinet ----------
+      if (theme === 'bg-arcade') {
+        if (!arcadeInit) {
+          arcadeInit = true
+          arcadeStars = []
+          const starCount = Math.min(180, Math.floor((W * H) / 11000))
+          for (let i = 0; i < starCount; i++) {
+            arcadeStars.push({
+              x: Math.random() * W,
+              y: Math.random() * H,
+              s: Math.random() * 1.6 + 0.4,
+              p: Math.random() * Math.PI * 2,
+            })
+          }
+          const HUES = [325, 185, 50]
+          arcadeMarquee = []
+          const mw = Math.ceil(W / ARCADE_PIX)
+          const mh = Math.ceil(H / ARCADE_PIX)
+          for (let r = 0; r < mh; r++) {
+            for (let cc = 0; cc < mw; cc++) {
+              if (Math.random() < 0.15) {
+                arcadeMarquee.push({
+                  x: cc * ARCADE_PIX,
+                  y: r * ARCADE_PIX,
+                  on: Math.random() < 0.5,
+                  next: elapsed + Math.random() * 700,
+                  hue: HUES[Math.floor(Math.random() * HUES.length)],
+                })
+              }
+            }
+          }
+        }
+
+        const acx = W / 2
+        const acy = H / 2
+
+        g.globalCompositeOperation = 'source-over'
+        const abg = g.createRadialGradient(acx, acy, 0, acx, acy, Math.max(W, H) * 0.7)
+        abg.addColorStop(0, '#160a2c')
+        abg.addColorStop(0.6, '#0a0414')
+        abg.addColorStop(1, '#05030c')
+        g.fillStyle = abg
+        g.fillRect(0, 0, W, H)
+
+        // twinkling starfield
+        for (const st of arcadeStars) {
+          const tw = 0.35 + 0.65 * (Math.sin(elapsed / 700 + st.p) * 0.5 + 0.5)
+          g.globalAlpha = tw * 0.85
+          g.fillStyle = '#cfe9ff'
+          g.fillRect(st.x, st.y, st.s, st.s)
+        }
+        g.globalAlpha = 1
+
+        // chunky pixel grid (faint)
+        g.strokeStyle = 'rgba(150,90,220,0.10)'
+        g.lineWidth = 1
+        g.beginPath()
+        for (let x = 0; x <= W; x += ARCADE_PIX) {
+          g.moveTo(x, 0)
+          g.lineTo(x, H)
+        }
+        for (let y = 0; y <= H; y += ARCADE_PIX) {
+          g.moveTo(0, y)
+          g.lineTo(W, y)
+        }
+        g.stroke()
+
+        // blinking neon marquee pixels
+        g.globalCompositeOperation = 'lighter'
+        const half = ARCADE_PIX / 2
+        const psz = ARCADE_PIX * 0.34
+        for (const m of arcadeMarquee) {
+          if (elapsed >= m.next) {
+            m.on = !m.on
+            m.next = elapsed + 350 + Math.random() * 650
+          }
+          if (m.on) {
+            const col = `hsl(${m.hue}, 100%, 62%)`
+            g.fillStyle = col
+            g.shadowColor = col
+            g.shadowBlur = 16
+            g.fillRect(m.x + half - psz / 2, m.y + half - psz / 2, psz, psz)
+          }
+        }
+        g.shadowBlur = 0
+        g.globalCompositeOperation = 'source-over'
+
+        // CRT scanlines
+        g.fillStyle = 'rgba(0,0,0,0.18)'
+        for (let y = 0; y < H; y += 3) {
+          g.fillRect(0, y, W, 1)
+        }
+
+        // slow vertical refresh sweep
+        const sweepY = (elapsed / 18) % (H + 200) - 100
+        const sg = g.createLinearGradient(0, sweepY - 60, 0, sweepY + 60)
+        sg.addColorStop(0, 'rgba(120,200,255,0)')
+        sg.addColorStop(0.5, 'rgba(120,200,255,0.06)')
+        sg.addColorStop(1, 'rgba(120,200,255,0)')
+        g.fillStyle = sg
+        g.fillRect(0, sweepY - 60, W, 120)
+
+        // cabinet-glass vignette
+        const vg = g.createRadialGradient(acx, acy, Math.min(W, H) * 0.3, acx, acy, Math.max(W, H) * 0.75)
+        vg.addColorStop(0, 'rgba(0,0,0,0)')
+        vg.addColorStop(1, 'rgba(0,0,0,0.55)')
+        g.fillStyle = vg
+        g.fillRect(0, 0, W, H)
+
+        animId = requestAnimationFrame(draw)
+        return
+      }
+
       mouse.x += (mouse.tx - mouse.x) * 0.08
       mouse.y += (mouse.ty - mouse.y) * 0.08
 
@@ -444,31 +562,6 @@ export function CyberCanvas({ skipIntro = false }: CyberCanvasProps) {
             const twinkleLife = nextTwinkle / (800 + 2000)
             const twinklePeak = Math.sin(twinkleLife * Math.PI) * 1.0
             twinkle.brightness = idleBase * 1.4 + twinklePeak
-          }
-
-          nextParticle -= 16
-          if (nextParticle <= 0) {
-            if (particles.length < MAX_PARTICLES) spawnParticle()
-            nextParticle = 280 + Math.random() * 520
-          }
-          for (let i = particles.length - 1; i >= 0; i--) {
-            const p = particles[i]
-            p.t += p.speed
-            if (p.t >= 1) {
-              const avoidR = p.ar
-              const avoidC = p.ac
-              p.ar = p.br
-              p.ac = p.bc
-              p.hops++
-              if (p.hops > MAX_HOPS) {
-                particles.splice(i, 1)
-              } else {
-                const [nr, nc] = pickNeighbor(p.ar, p.ac, avoidR, avoidC)
-                p.br = nr
-                p.bc = nc
-                p.t = 0
-              }
-            }
           }
 
           if (rings.length < 2) {
@@ -605,31 +698,6 @@ export function CyberCanvas({ skipIntro = false }: CyberCanvasProps) {
           g.beginPath()
           g.arc(rn.x, rn.y, radius + 15, 0, Math.PI * 2)
           g.fill()
-        }
-
-        // ---------- Nexus: particles (data-flow sparks) ----------
-        for (const p of particles) {
-          const A = vertAt(p.ar, p.ac)
-          const B = vertAt(p.br, p.bc)
-          if (!A || !B) continue
-          const px = A.x + (B.x - A.x) * p.t
-          const py = A.y + (B.y - A.y) * p.t
-          const trailT = Math.max(p.t - 0.14, 0)
-          const tx = A.x + (B.x - A.x) * trailT
-          const ty = A.y + (B.y - A.y) * trailT
-          g.strokeStyle = `hsla(${p.hue},100%,65%,0.5)`
-          g.lineWidth = 1.5
-          g.beginPath()
-          g.moveTo(tx, ty)
-          g.lineTo(px, py)
-          g.stroke()
-          g.shadowBlur = 10
-          g.shadowColor = `hsla(${p.hue},100%,60%,0.9)`
-          g.fillStyle = `hsla(${p.hue},100%,78%,0.95)`
-          g.beginPath()
-          g.arc(px, py, 2, 0, Math.PI * 2)
-          g.fill()
-          g.shadowBlur = 0
         }
       }
 

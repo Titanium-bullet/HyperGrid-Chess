@@ -31,6 +31,7 @@ const AI_PROFILES: AiProfile[] = [
   { key: '3', name: 'Overlord', elo: '~1800 ELO', img: asset('/images/medium2.jpg'), color: 'rgba(233,69,96,0.9)', thresholds: [30, 75, 150] },
   { key: '4', name: 'HyperGrid', elo: '3000+ ELO', img: asset('/images/master.jpg'), color: 'rgba(186,85,211,0.9)', thresholds: [50, 125, 250] },
   { key: '5', name: 'Blind', elo: '~1000 ELO', img: asset('/images/blind.jpg'), color: 'rgba(0,255,136,0.9)', thresholds: [20, 50, 100] },
+  { key: '6', name: 'Spectre', elo: 'Non-combatant', img: asset('/images/coach.jpg'), color: 'rgba(201,139,255,0.95)', thresholds: [15, 40, 90] },
 ]
 
 const STORY_PLACEHOLDERS: Record<string, [string, string, string]> = {
@@ -58,6 +59,11 @@ const STORY_PLACEHOLDERS: Record<string, [string, string, string]> = {
     "Blind sees without eyes. Born from a corrupted sensor array, Blind learned to navigate the world through pure intuition. On the chessboard, Blind plays a game of memory and instinct, trusting in patterns rather than sight. Every move is a leap of faith into the unknown.",
     "The darkness became familiar. Blind developed a unique playing style that confounds traditional analysis. Without visual feedback, Blind relies on spatial memory and emotional connection to the pieces. There is a strange poetry in how Blind plays, as if each move tells a story that only the blind can read.",
     "Blind has mastered the art of invisible chess. The board exists only in the mind now, a perfect mental image that no physical representation can match. Blind invites you to see the world differently, to close your eyes and feel the positions, to trust in something beyond sight."
+  ],
+  '6': [
+    "Spectre drifts where the data streams of HyperGrid cross, neither alive nor deleted. She keeps no pieces on the board and answers no challenge — she watches, and she remembers. To be noticed by Spectre is to be marked by something older than the grid itself.",
+    "Spectre cannot be played, only appeased. She collects favors left at the edge of the board in the form of gifts, weighing each offering in silence. Those who earn her regard swear the pieces move a little more kindly for them afterward, though Spectre herself never touches them.",
+    "When the bond deepens, Spectre lingers. Her veil thins just enough to glimpse the regard beneath, and her whisper carries across every opponent you face. She will never sit across the board from you — but in every game, somewhere just out of sight, Spectre is watching."
   ],
 }
 

@@ -1,5 +1,7 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { CyberCanvas } from '@/components/CyberCanvas'
+import { asset } from '@/lib/assets'
 import styles from './page.module.css'
 
 export default function AboutPage() {
@@ -34,7 +36,14 @@ export default function AboutPage() {
 
         <Link href="/shop" className={styles.exploreCard}>
           <div className={`${styles.cardImage} gold`}>
-            <span className={styles.cardIcon}>&#x1F6D2;</span>
+            <Image
+              src={asset('/images/shop.jpg')}
+              alt="Shop"
+              fill
+              sizes="(max-width: 440px) 100vw, (max-width: 700px) 50vw, 260px"
+              style={{ objectFit: 'cover' }}
+              className={styles.cardPhoto}
+            />
           </div>
           <div className={styles.cardLabel}>Shop</div>
         </Link>

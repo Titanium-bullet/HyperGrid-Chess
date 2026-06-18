@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { showToast } from '@/lib/achievements'
 import { getEquippedBackground } from '@/lib/shop'
 import { HYPERGRID_INVENTORY_CHANGED } from '@/lib/events'
 
@@ -16,12 +15,6 @@ export function HomeMenu() {
     return () => window.removeEventListener(HYPERGRID_INVENTORY_CHANGED, apply)
   }, [])
 
-  function testAchievements() {
-    showToast('First Blood', 'Bronze', '⚔')
-    window.setTimeout(() => showToast('Nova Slayer', 'Silver', '🌟'), 1200)
-    window.setTimeout(() => showToast('HyperGrid Slayer', 'Gold', '🔥'), 2400)
-  }
-
   return (
     <div className={`home-menu-container${spectra ? ' home-menu-spectra' : ''}`}>
       <Link href="/play" className="home-menu-btn home-menu-btn--primary" style={{ animationDelay: '2.5s' }}>
@@ -29,25 +22,23 @@ export function HomeMenu() {
         <span className="home-menu-btn__subtitle">Play now</span>
       </Link>
 
-      <button
-        type="button"
-        onClick={testAchievements}
+      <Link
+        href="/arcade"
         className="home-menu-btn home-menu-btn--secondary"
         style={{ animationDelay: '2.65s' }}
       >
-        Test Achievements
-        <span className="home-menu-btn__subtitle">Bronze → Silver → Gold</span>
-      </button>
+        Arcade: Versus
+        <span className="home-menu-btn__subtitle">2-Player Neon Brawl</span>
+      </Link>
 
-      <button
-        type="button"
-        disabled
-        className="home-menu-btn home-menu-btn--disabled"
+      <Link
+        href="/finance"
+        className="home-menu-btn home-menu-btn--secondary"
         style={{ animationDelay: '2.8s' }}
       >
-        Gomoku
-        <span className="home-menu-btn__subtitle">Coming soon</span>
-      </button>
+        Finance
+        <span className="home-menu-btn__subtitle">Bank of Hypergrid</span>
+      </Link>
 
       <Link
         href="/about"

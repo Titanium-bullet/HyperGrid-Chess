@@ -187,6 +187,7 @@ export function GameClient() {
   const gameStartedRef = useRef(false)
   const timeExpiredRef = useRef(false)
   const isAIMovingRef = useRef(false)
+  const hintPendingRef = useRef(false)
   const pendingMoveRef = useRef<{ from: string; to: string } | null>(null)
   const stockfishRef = useRef<StockfishEngine | null>(null)
   const gameStartTimeRef = useRef<number>(Date.now())
@@ -218,6 +219,15 @@ export function GameClient() {
   const [boardKey, setBoardKey] = useState(0)
   const [evalState, setEvalState] = useState<{ value: number; mate: number | null }>({ value: 0, mate: null })
   const [evalEnabled, setEvalEnabled] = useState(false)
+  const [threatAlertEnabled, setThreatAlertEnabled] = useState(false)
+  const [bestMoveEnabled, setBestMoveEnabled] = useState(false)
+  const [legalMovesEnabled, setLegalMovesEnabled] = useState(false)
+  const [undoUnlimited, setUndoUnlimited] = useState(false)
+  const [hintActive, setHintActive] = useState<string | null>(null)
+  const [legalPreviewSource, setLegalPreviewSource] = useState<string | null>(null)
+  const MAX_FREE_UNDOS = 3
+  const [undosLeft, setUndosLeft] = useState(MAX_FREE_UNDOS)
+  const [threatMessage, setThreatMessage] = useState('')
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
   const [showGameOver, setShowGameOver] = useState(false)
@@ -260,8 +270,16 @@ export function GameClient() {
       try {
         const inv = getInventory()
         setEvalEnabled((inv.powerups.evalBar ?? 0) > 0)
+        setThreatAlertEnabled((inv.powerups.threatAlert ?? 0) > 0)
+        setBestMoveEnabled((inv.powerups.bestMove ?? 0) > 0)
+        setLegalMovesEnabled((inv.powerups.legalMoves ?? 0) > 0)
+        setUndoUnlimited((inv.powerups.undoPack ?? 0) > 0)
       } catch {
         setEvalEnabled(false)
+        setThreatAlertEnabled(false)
+        setBestMoveEnabled(false)
+        setLegalMovesEnabled(false)
+        setUndoUnlimited(false)
       }
     }
     refreshEvalEnabled()
@@ -423,6 +441,95 @@ export function GameClient() {
     [initialConfig],
   )
 
+  const refreshThreatAlert = useCallback(() => {
+    const boardDiv = document.getElementById('myBoard')
+    if (boardDiv) {
+      boardDiv.querySelectorAll('.highlight-threatened').forEach((el) => el.classList.remove('highlight-threatened'))
+    }
+    const game = chessRef.current
+    if (!game || !threatAlertEnabled) {
+      setThreatMessage('')
+      return
+    }
+    if (initialConfig.gameMode !== 'ai') {
+      setThreatMessage('')
+      return
+    }
+    if (game.game_over() || game.in_check() || game.turn() !== playerColorRef.current) {
+      setThreatMessage('')
+      return
+    }
+
+    const PIECE_VALUE: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 }
+    const PIECE_NAME: Record<string, string> = { q: 'Queen', r: 'Rook', b: 'Bishop', n: 'Knight' }
+    const Ctor = window.Chess
+    if (!Ctor) {
+      setThreatMessage('')
+      return
+    }
+
+    const parts = game.fen().split(' ')
+    parts[1] = playerColorRef.current === 'w' ? 'b' : 'w'
+    let tmp: ChessJsInstance
+    try {
+      tmp = new Ctor(parts.join(' '))
+    } catch {
+      setThreatMessage('')
+      return
+    }
+
+    const oppMoves = tmp.moves({ verbose: true }) as ChessJsMove[]
+    const threatened = new Set<string>()
+    const victimBySquare = new Map<string, string>()
+    for (const m of oppMoves) {
+      if (!m.captured) continue
+      const victim = m.captured.toLowerCase()
+      if ((PIECE_VALUE[victim] ?? 0) < 3) continue
+      victimBySquare.set(m.to, victim)
+      const attackerValue = PIECE_VALUE[(m.piece ?? '').toLowerCase()] ?? 0
+      const victimValue = PIECE_VALUE[victim] ?? 0
+      let defended = false
+      const played = tmp.move({ from: m.from, to: m.to, promotion: m.promotion })
+      if (played) {
+        const recaps = tmp.moves({ verbose: true }) as ChessJsMove[]
+        defended = recaps.some((rm) => rm.to === m.to && rm.captured)
+        tmp.undo()
+      }
+      if (!defended || attackerValue < victimValue) threatened.add(m.to)
+    }
+
+    let mateThreat = false
+    for (const m of oppMoves) {
+      const played = tmp.move({ from: m.from, to: m.to, promotion: m.promotion })
+      if (played) {
+        if (tmp.in_checkmate()) mateThreat = true
+        tmp.undo()
+        if (mateThreat) break
+      }
+    }
+
+    if (threatened.size > 0 && boardDiv) {
+      for (const sq of threatened) {
+        const el = boardDiv.querySelector(`[data-squareid="${sq}"]`) ?? boardDiv.querySelector(`[data-square="${sq}"]`)
+        el?.classList.add('highlight-threatened')
+      }
+    }
+
+    if (mateThreat) {
+      setThreatMessage('⚠ Checkmate threat — find a defense!')
+    } else if (threatened.size > 0) {
+      const names = [...threatened].map((sq) => PIECE_NAME[victimBySquare.get(sq) ?? ''] ?? 'Piece')
+      const uniq = [...new Set(names)]
+      const noun =
+        uniq.length > 1
+          ? `Your ${uniq.join(', ')} are under attack!`
+          : `Your ${uniq[0]} is under attack!`
+      setThreatMessage(`⚠ ${noun}`)
+    } else {
+      setThreatMessage('')
+    }
+  }, [threatAlertEnabled, initialConfig.gameMode])
+
   const updateStatus = useCallback(() => {
     const game = chessRef.current
     if (!game) return
@@ -456,8 +563,9 @@ export function GameClient() {
         setSafeStatus(text, kind)
       }
     }
+    refreshThreatAlert()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [soundEnabled, trackGameAchievement, setSafeStatus])
+  }, [soundEnabled, trackGameAchievement, setSafeStatus, refreshThreatAlert])
 
   // Timer
   const timerIntervalRef = useRef<number | null>(null)
@@ -785,6 +893,151 @@ export function GameClient() {
     [evalEnabled],
   )
 
+  // --- Best Move hint overlay ---
+  const clearHint = useCallback(() => {
+    const wasPending = hintPendingRef.current
+    document.querySelectorAll('.best-move-highlight').forEach((n) => n.classList.remove('best-move-highlight'))
+    const svg = document.getElementById('hintArrowSvg')
+    if (svg) svg.remove()
+    hintPendingRef.current = false
+    setHintActive(null)
+    if (wasPending) stockfishRef.current?.stop()
+  }, [])
+
+  const drawHintArrow = useCallback((from: string, to: string) => {
+    const boardEl = document.getElementById('myBoard')
+    if (!boardEl) return
+    const fromSq = boardEl.querySelector<HTMLElement>(`[data-squareid="${from}"]`)
+    const toSq = boardEl.querySelector<HTMLElement>(`[data-squareid="${to}"]`)
+    if (!fromSq || !toSq) return
+    const br = boardEl.getBoundingClientRect()
+    const fr = fromSq.getBoundingClientRect()
+    const tr = toSq.getBoundingClientRect()
+    const x1 = fr.left - br.left + fr.width / 2
+    const y1 = fr.top - br.top + fr.height / 2
+    const x2 = tr.left - br.left + tr.width / 2
+    const y2 = tr.top - br.top + tr.height / 2
+    const SVGNS = 'http://www.w3.org/2000/svg'
+    let svg = document.getElementById('hintArrowSvg') as SVGSVGElement | null
+    if (!svg) {
+      svg = document.createElementNS(SVGNS, 'svg')
+      svg.id = 'hintArrowSvg'
+      svg.style.position = 'absolute'
+      svg.style.inset = '0'
+      svg.style.width = '100%'
+      svg.style.height = '100%'
+      svg.style.pointerEvents = 'none'
+      svg.style.zIndex = '50'
+      boardEl.appendChild(svg)
+    }
+    svg.innerHTML = ''
+    const w = boardEl.clientWidth
+    const h = boardEl.clientHeight
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`)
+    const dx = x2 - x1
+    const dy = y2 - y1
+    const len = Math.hypot(dx, dy) || 1
+    const ux = dx / len
+    const uy = dy / len
+    const headLen = Math.min(26, len * 0.4)
+    const lineEndX = x2 - ux * headLen * 0.6
+    const lineEndY = y2 - uy * headLen * 0.6
+    const line = document.createElementNS(SVGNS, 'line')
+    line.setAttribute('x1', String(x1))
+    line.setAttribute('y1', String(y1))
+    line.setAttribute('x2', String(lineEndX))
+    line.setAttribute('y2', String(lineEndY))
+    line.setAttribute('stroke', 'rgba(255,215,0,0.95)')
+    line.setAttribute('stroke-width', '9')
+    line.setAttribute('stroke-linecap', 'round')
+    line.setAttribute('filter', 'drop-shadow(0 0 6px rgba(255,215,0,0.9))')
+    svg.appendChild(line)
+    const ang = Math.atan2(dy, dx)
+    const a1 = ang + Math.PI - 0.5
+    const a2 = ang + Math.PI + 0.5
+    const p1x = x2 + Math.cos(a1) * headLen
+    const p1y = y2 + Math.sin(a1) * headLen
+    const p2x = x2 + Math.cos(a2) * headLen
+    const p2y = y2 + Math.sin(a2) * headLen
+    const head = document.createElementNS(SVGNS, 'polygon')
+    head.setAttribute('points', `${x2},${y2} ${p1x},${p1y} ${p2x},${p2y}`)
+    head.setAttribute('fill', 'rgba(255,215,0,0.95)')
+    svg.appendChild(head)
+  }, [])
+
+  const showHintMove = useCallback(
+    (best: string) => {
+      if (!best || best === '(none)' || best.length < 4) return
+      const from = best.slice(0, 2)
+      const to = best.slice(2, 4)
+      clearHint()
+      ;[from, to].forEach((sq) => {
+        document.querySelector(`[data-squareid="${sq}"]`)?.classList.add('best-move-highlight')
+      })
+      drawHintArrow(from, to)
+      setHintActive(`${from}${to}`)
+      window.setTimeout(() => clearHint(), 6000)
+    },
+    [clearHint, drawHintArrow],
+  )
+
+  // Route engine bestmove: hint request takes priority, otherwise AI move
+  const dispatchBestMove = useCallback(
+    (bestMove: string) => {
+      if (hintPendingRef.current) {
+        showHintMove(bestMove)
+        return
+      }
+      handleBestMove(bestMove)
+    },
+    [handleBestMove, showHintMove],
+  )
+
+  const requestHint = useCallback(() => {
+    const game = chessRef.current
+    if (!game || game.game_over()) return
+    if (!bestMoveEnabled) return
+    // Only hint on the player's turn and when AI isn't thinking
+    if (initialConfig.gameMode === 'ai' && game.turn() !== playerColorRef.current) return
+    if (isAIMovingRef.current || aiThinking) return
+    // Ensure engine exists (also supports non-AI modes)
+    if (!stockfishRef.current) {
+      const engine = createStockfish()
+      if (!engine) return
+      stockfishRef.current = engine
+      engine.setCallbacks({ onBestMove: dispatchBestMove, onEval: handleEval })
+    }
+    const sf = stockfishRef.current
+    clearHint()
+    hintPendingRef.current = true
+    setHintActive('...')
+    sf.stop?.()
+    sf.positionFen(game.fen())
+    sf.setSkill(20)
+    sf.go(15, 1200)
+  }, [bestMoveEnabled, initialConfig.gameMode, aiThinking, clearHint, dispatchBestMove, handleEval])
+
+  // --- Legal move dots ---
+  const clearLegalDots = useCallback(() => {
+    document.querySelectorAll('.highlight-legal').forEach((el) => el.classList.remove('highlight-legal'))
+    setLegalPreviewSource(null)
+  }, [])
+
+  const showLegalDots = useCallback(
+    (source: string) => {
+      const game = chessRef.current
+      if (!game) return
+      clearLegalDots()
+      const moves = game.moves({ square: source as never, verbose: true }) as ChessJsMove[]
+      moves.forEach((m) => {
+        document.querySelector(`[data-squareid="${m.to}"]`)?.classList.add('highlight-legal')
+      })
+      setLegalPreviewSource(source)
+    },
+    [clearLegalDots],
+  )
+
+
   // Drop / drag handlers
   const onDragStart = useCallback(
     (_source: string, piece: string): boolean => {
@@ -800,9 +1053,10 @@ export function GameClient() {
       ) {
         return false
       }
+      if (legalMovesEnabled && !puzzleMode) showLegalDots(_source)
       return true
     },
-    [initialConfig.gameMode, puzzleMode],
+    [initialConfig.gameMode, puzzleMode, legalMovesEnabled, showLegalDots],
   )
 
   const handlePuzzleSolved = useCallback(
@@ -930,6 +1184,8 @@ export function GameClient() {
 
   const onDrop = useCallback(
     (source: string, target: string): 'snapback' | void => {
+      clearLegalDots()
+      clearHint()
       if (puzzleMode) return onPuzzleDrop(source, target)
       const game = chessRef.current
       if (!game) return 'snapback'
@@ -978,13 +1234,14 @@ export function GameClient() {
       el?.setAttribute('data-valid-move', 'true')
       updateBlindfoldVisibility(target)
     },
-    [puzzleMode, onPuzzleDrop, initialConfig.gameMode, startTimer, soundEnabled, updateBlindfoldVisibility],
+    [puzzleMode, onPuzzleDrop, initialConfig.gameMode, startTimer, soundEnabled, updateBlindfoldVisibility, clearLegalDots, clearHint],
   )
 
   const onSnapEnd = useCallback(() => {
     const game = chessRef.current
     const board = boardRef.current
     if (!game || !board) return
+    clearLegalDots()
     try {
       board.position(game.fen(), !blindfoldMode)
     } catch {
@@ -1019,6 +1276,7 @@ export function GameClient() {
     initialConfig.gameMode,
     makeAIMove,
     puzzleMode,
+    clearLegalDots,
   ])
 
   const onBoardReady = useCallback(
@@ -1035,11 +1293,11 @@ export function GameClient() {
           const engine = createStockfish()
           if (engine) {
             stockfishRef.current = engine
-            engine.setCallbacks({ onBestMove: handleBestMove, onEval: handleEval })
+            engine.setCallbacks({ onBestMove: dispatchBestMove, onEval: handleEval })
             engine.setSkill(SKILL_MAP[aiDifficulty])
           }
         } else {
-          stockfishRef.current.setCallbacks({ onBestMove: handleBestMove, onEval: handleEval })
+          stockfishRef.current.setCallbacks({ onBestMove: dispatchBestMove, onEval: handleEval })
           stockfishRef.current.setSkill(SKILL_MAP[aiDifficulty])
         }
       }
@@ -1063,7 +1321,7 @@ export function GameClient() {
       updateBoardThemeClass,
       puzzleMode,
       initialConfig.gameMode,
-      handleBestMove,
+      dispatchBestMove,
       handleEval,
       aiDifficulty,
       updateStatus,
@@ -1166,6 +1424,8 @@ export function GameClient() {
     game.reset()
     board.start()
     clearHighlights()
+    clearHint()
+    clearLegalDots()
     moveHistoryRef.current = []
     capturedWhiteRef.current = []
     capturedBlackRef.current = []
@@ -1186,6 +1446,9 @@ export function GameClient() {
     setShowPromotion(false)
     setShowGameOver(false)
     setEvalState({ value: 0, mate: null })
+    setUndosLeft(MAX_FREE_UNDOS)
+    setHintActive(null)
+    hintPendingRef.current = false
     updateBlindfoldVisibility(null)
     stockfishRef.current?.newGame()
     updateStatus()
@@ -1193,6 +1456,8 @@ export function GameClient() {
   }, [
     cancelPendingAI,
     clearHighlights,
+    clearHint,
+    clearLegalDots,
     initialConfig.timeControl,
     stopTimer,
     updateBlindfoldVisibility,
@@ -1205,8 +1470,12 @@ export function GameClient() {
     const board = boardRef.current
     if (!game || !board) return
     if (moveHistoryRef.current.length === 0) return
+    if (!undoUnlimited && undosLeft <= 0) return
     cancelPendingAI()
+    clearHint()
+    clearLegalDots()
     if (!game.undo()) return
+    if (!undoUnlimited) setUndosLeft((n) => Math.max(0, n - 1))
     const last = moveHistoryRef.current.pop()
     if (last?.captured) {
       const cc = last.color === 'w' ? 'b' : 'w'
@@ -1235,7 +1504,7 @@ export function GameClient() {
     setMoveHistory([...moveHistoryRef.current])
     setCapturedWhite([...capturedWhiteRef.current])
     setCapturedBlack([...capturedBlackRef.current])
-  }, [cancelPendingAI, initialConfig.gameMode, updateBlindfoldVisibility, updateStatus, updateGameTheme])
+  }, [cancelPendingAI, undoUnlimited, undosLeft, clearHint, clearLegalDots, initialConfig.gameMode, updateBlindfoldVisibility, updateStatus, updateGameTheme])
 
   const handleFlipOrSwitch = useCallback(() => {
     const board = boardRef.current
@@ -1478,15 +1747,26 @@ export function GameClient() {
               {showEvalBar && (
                 <div className="eval-bar-wrap" id="evalBarWrap" style={{ display: 'flex' }}>
                   <div className="eval-bar-container" id="evalBarContainer">
+                    <div className="eval-bar-center" />
                     <div
                       className="eval-bar-fill"
                       id="evalBarFill"
                       style={{ width: `${evalPct}%` }}
+                    >
+                      <div className="eval-bar-fill-glow" />
+                    </div>
+                    <div
+                      className="eval-bar-divider"
+                      id="evalBarDivider"
+                      style={{ left: `${evalPct}%` }}
                     />
                     <span
                       className="eval-bar-label"
                       id="evalBarLabel"
-                      style={{ left: `${evalPct}%`, color: evalPct > 55 ? '#1a1a1a' : '#fff' }}
+                      style={{
+                        left: `${evalPct}%`,
+                        transform: `translate(${evalPct > 80 ? '-110%' : evalPct < 20 ? '10%' : '-50%'}, -50%)`,
+                      }}
                     >
                       {evalLabelText}
                     </span>
@@ -1550,6 +1830,12 @@ export function GameClient() {
 
           <div id="openingName" className="opening-name" />
 
+          {threatMessage && (
+            <div className="threat-banner" role="status">
+              {threatMessage}
+            </div>
+          )}
+
           <div id="status" className={statusClassName} style={statusStyle}>
             {statusText}
           </div>
@@ -1560,7 +1846,25 @@ export function GameClient() {
                 <button>&#8592; Menu</button>
               </Link>
               <button onClick={resetGame}>New Game</button>
-              <button onClick={undoMove}>Undo</button>
+              <button
+                onClick={undoMove}
+                disabled={!undoUnlimited && undosLeft <= 0}
+                className={!undoUnlimited && undosLeft <= 0 ? 'cb-btn-disabled' : ''}
+                title={undoUnlimited ? 'Unlimited undo (Undo Pack)' : `${undosLeft} undo${undosLeft === 1 ? '' : 's'} left`}
+              >
+                Undo{undoUnlimited ? ' \u221E' : ` (${undosLeft})`}
+              </button>
+              {bestMoveEnabled && (
+                <button
+                  id="hintBtn"
+                  onClick={requestHint}
+                  disabled={hintActive === '...'}
+                  className={hintActive && hintActive !== '...' ? 'hint-btn-active' : ''}
+                  title="Show the engine's best move"
+                >
+                  {hintActive === '...' ? '...' : '\u{1F4A1} Hint'}
+                </button>
+              )}
               <button id="flipBtn" onClick={handleFlipOrSwitch}>
                 {flipBtnLabel}
               </button>
@@ -1800,8 +2104,8 @@ export function GameClient() {
                     <span>
                       {pw.icon} {pw.name}
                     </span>
-                    <span style={{ color: '#ffd700' }}>
-                      x{inventory?.powerups[pw.id] ?? 0}
+                    <span style={{ color: '#00ff88' }}>
+                      {(inventory?.powerups[pw.id] ?? 0) > 0 ? 'Active' : ''}
                     </span>
                   </div>
                 ))}

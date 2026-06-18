@@ -1,0 +1,426 @@
+.arenaWrap {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  aspect-ratio: 1000 / 560;
+  margin: 0 auto;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 255, 0.18);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6), inset 0 0 60px rgba(0, 0, 0, 0.6);
+  background: radial-gradient(ellipse at center, rgba(10, 14, 30, 0.5), rgba(4, 4, 12, 0.85));
+  z-index: 1;
+}
+
+.arenaCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------- HUD ---------- */
+.hudTop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.fighterHud {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 42%;
+}
+
+.fighterHudFlip {
+  align-items: flex-end;
+}
+
+.fighterNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fighterHudFlip .fighterNameRow {
+  flex-direction: row-reverse;
+}
+
+.fighterName {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: clamp(0.8rem, 2.4vw, 1.3rem);
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.winPips {
+  display: flex;
+  gap: 4px;
+}
+
+.winPip {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.winPipOn {
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.hpBar {
+  position: relative;
+  width: 100%;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.hpBarBg {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.hpBarFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  transition: width 0.18s linear;
+}
+
+.fighterHudFlip .hpBarFill {
+  left: auto;
+  right: 0;
+}
+
+.meterBar {
+  position: relative;
+  width: 70%;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 213, 74, 0.3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.fighterHudFlip .meterBar {
+  margin-left: auto;
+}
+
+.meterBarFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  transition: width 0.2s ease;
+}
+
+.hudCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 70px;
+  padding-top: 2px;
+}
+
+.roundTime {
+  font-family: var(--font-orbitron), 'Orbitron', monospace;
+  font-size: clamp(1.2rem, 3.5vw, 1.9rem);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+  min-width: 40px;
+  text-align: center;
+}
+
+.roundPipsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vsDot {
+  font-family: var(--font-orbitron), sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 1px;
+}
+
+.pipsRow {
+  display: flex;
+  gap: 4px;
+}
+
+.pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  background: transparent;
+}
+
+.pipOn {
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+/* ---------- Banner ---------- */
+.bannerWrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  pointer-events: none;
+  gap: 6px;
+}
+
+.bannerText {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: clamp(2rem, 8vw, 4.5rem);
+  font-weight: 900;
+  letter-spacing: 6px;
+  color: #fff;
+  text-shadow:
+    0 0 20px rgba(255, 255, 255, 0.8),
+    0 0 40px rgba(233, 69, 96, 0.7),
+    0 0 80px rgba(233, 69, 96, 0.4);
+  animation: bannerPunch 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bannerSub {
+  font-family: var(--font-orbitron), sans-serif;
+  font-size: clamp(0.7rem, 2.2vw, 1rem);
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+}
+
+@keyframes bannerPunch {
+  0% { opacity: 0; transform: scale(2.4); letter-spacing: 30px; }
+  60% { opacity: 1; transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1); letter-spacing: 6px; }
+}
+
+/* ---------- Buttons (help / mute) ---------- */
+.helpBtn,
+.muteBtn {
+  position: absolute;
+  top: 12px;
+  z-index: 5;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 255, 255, 0.4);
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(0, 255, 255, 0.9);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(6px);
+}
+
+.helpBtn:hover,
+.muteBtn:hover {
+  background: rgba(0, 255, 255, 0.15);
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.4);
+}
+
+.muteBtn {
+  right: 12px;
+}
+
+.helpBtn {
+  right: 54px;
+}
+
+/* ---------- Help panel ---------- */
+.helpPanel {
+  position: absolute;
+  top: 54px;
+  right: 12px;
+  z-index: 6;
+  background: linear-gradient(145deg, rgba(26, 26, 46, 0.96), rgba(22, 33, 62, 0.96));
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 16px 18px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  max-width: 340px;
+  pointer-events: auto;
+}
+
+.helpTitle {
+  font-family: var(--font-orbitron), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: rgba(0, 255, 255, 0.8);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.helpColumns {
+  display: flex;
+  gap: 22px;
+}
+
+.helpName {
+  font-family: var(--font-orbitron), sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+.kbdRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 0;
+  font-size: 0.78rem;
+}
+
+.kbdLabel {
+  color: #aaa;
+}
+
+.kbdKey {
+  font-family: 'Courier New', monospace;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 0 6px;
+  font-weight: 700;
+}
+
+.helpFoot {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.7rem;
+  color: #888;
+  text-align: center;
+}
+
+/* ---------- Rematch overlay ---------- */
+.rematchOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  animation: bannerPunch 0.5s ease;
+}
+
+.rematchCard {
+  text-align: center;
+  padding: 28px 36px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
+}
+
+.rematchTitle {
+  font-family: var(--font-orbitron), 'Orbitron', sans-serif;
+  font-size: clamp(1.6rem, 5vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: 3px;
+  margin-bottom: 4px;
+}
+
+.rematchSub {
+  color: #888;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.rematchBtns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.rematchPrimary,
+.rematchSecondary {
+  padding: 12px 26px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: inherit;
+}
+
+.rematchPrimary {
+  background: linear-gradient(135deg, #e94560, #c73e54);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+}
+
+.rematchPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(233, 69, 96, 0.6);
+}
+
+.rematchSecondary {
+  background: rgba(0, 255, 255, 0.08);
+  color: rgba(0, 255, 255, 0.9);
+  border: 1px solid rgba(0, 255, 255, 0.4);
+}
+
+.rematchSecondary:hover {
+  background: rgba(0, 255, 255, 0.18);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+}
+
+@media (max-width: 700px) {
+  .arenaWrap {
+    aspect-ratio: 5 / 4;
+  }
+  .helpColumns {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .helpPanel {
+    max-width: 260px;
+  }
+}
