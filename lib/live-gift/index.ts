@@ -1,8 +1,6 @@
 import { GIFT_EFFECTS, GIFT_COMBO_TIMEOUT, type GiftEffectConfig } from './config'
-import { GiftParticleEngine } from './particles'
-import { GiftEffectOrchestrator } from './effects'
-import { showGiftCard, screenFlash, screenShake, showBrightnessBoost, clearAllGiftDom } from './ui'
-import { closeGiftAudioContext } from './audio'
+import { showGiftCard, removeGiftCard, clearAllGiftDom } from './ui'
+import { playGiftVideo } from './video'
 
 export type SendGiftOptions = {
   id: string
@@ -12,24 +10,10 @@ export type SendGiftOptions = {
 
 type QueueItem = { cfg: GiftEffectConfig; sender: string; combo: number }
 
-let particleEngine: GiftParticleEngine | null = null
-let orchestrator: GiftEffectOrchestrator | null = null
 let comboMap: Record<string, { count: number; lastTime: number }> = {}
 let queue: QueueItem[] = []
 let processing = false
 let muted = false
-let deferredClearId: number | null = null
-
-function isReducedMotion(): boolean {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
-
-function getEngine(): { particles: GiftParticleEngine; orchestrator: GiftEffectOrchestrator } {
-  if (!particleEngine) particleEngine = new GiftParticleEngine()
-  if (!orchestrator) orchestrator = new GiftEffectOrchestrator(particleEngine)
-  return { particles: particleEngine, orchestrator }
-}
 
 export function sendGift(opts: SendGiftOptions): void {
   if (typeof window === 'undefined') return
@@ -72,53 +56,22 @@ function executeGift(item: QueueItem, done: () => void): void {
     done()
     return
   }
-  if (deferredClearId !== null) {
-    window.clearTimeout(deferredClearId)
-    deferredClearId = null
-  }
-  const reduced = isReducedMotion()
-  const { particles, orchestrator } = getEngine()
-  particles.init()
-  showGiftCard(item.cfg, item.sender, item.combo)
-  window.setTimeout(() => {
-    screenFlash(item.cfg.screenFlash.color, item.cfg.screenFlash.opacity, item.cfg.screenFlash.duration)
-  }, 300)
-  if (!reduced && item.cfg.shakeIntensity > 0) {
-    window.setTimeout(() => screenShake(item.cfg.shakeIntensity, item.cfg.shakeDuration), 400)
-  }
-  if (!reduced && item.cfg.rarity === 'mythic') showBrightnessBoost(0.1, item.cfg.duration)
-  orchestrator.playEffect(item.cfg, item.combo, { reducedMotion: reduced })
-  orchestrator.playComboEffect(item.combo, item.cfg.rarityColor)
-  window.setTimeout(() => {
-    if (queue.length === 0) {
-      deferredClearId = window.setTimeout(() => {
-        deferredClearId = null
-        if (queue.length === 0 && !processing) particles.clear()
-      }, 1000)
-    }
+  const card = showGiftCard(item.cfg, item.sender)
+  playGiftVideo(item.cfg, () => {
+    removeGiftCard(card)
     done()
-  }, item.cfg.duration + 500)
+  })
 }
 
 export function clearGiftQueue(): void {
   queue = []
   processing = false
-  if (deferredClearId !== null) {
-    window.clearTimeout(deferredClearId)
-    deferredClearId = null
-  }
-  orchestrator?.cleanup()
-  particleEngine?.clear()
   clearAllGiftDom()
 }
 
 export function destroyGiftSystem(): void {
   clearGiftQueue()
-  particleEngine?.destroy()
-  particleEngine = null
-  orchestrator = null
   comboMap = {}
-  closeGiftAudioContext()
 }
 
 export function setGiftMuted(v: boolean): void {

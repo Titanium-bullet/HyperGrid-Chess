@@ -481,31 +481,23 @@ export function GameClient() {
     const oppMoves = tmp.moves({ verbose: true }) as ChessJsMove[]
     const threatened = new Set<string>()
     const victimBySquare = new Map<string, string>()
-    for (const m of oppMoves) {
-      if (!m.captured) continue
-      const victim = m.captured.toLowerCase()
-      if ((PIECE_VALUE[victim] ?? 0) < 3) continue
-      victimBySquare.set(m.to, victim)
-      const attackerValue = PIECE_VALUE[(m.piece ?? '').toLowerCase()] ?? 0
-      const victimValue = PIECE_VALUE[victim] ?? 0
-      let defended = false
-      const played = tmp.move({ from: m.from, to: m.to, promotion: m.promotion })
-      if (played) {
-        const recaps = tmp.moves({ verbose: true }) as ChessJsMove[]
-        defended = recaps.some((rm) => rm.to === m.to && rm.captured)
-        tmp.undo()
-      }
-      if (!defended || attackerValue < victimValue) threatened.add(m.to)
-    }
-
     let mateThreat = false
     for (const m of oppMoves) {
       const played = tmp.move({ from: m.from, to: m.to, promotion: m.promotion })
-      if (played) {
-        if (tmp.in_checkmate()) mateThreat = true
-        tmp.undo()
-        if (mateThreat) break
+      if (!played) continue
+      if (m.captured) {
+        const victim = m.captured.toLowerCase()
+        if ((PIECE_VALUE[victim] ?? 0) >= 3) {
+          victimBySquare.set(m.to, victim)
+          const attackerValue = PIECE_VALUE[(m.piece ?? '').toLowerCase()] ?? 0
+          const victimValue = PIECE_VALUE[victim] ?? 0
+          const recaps = tmp.moves({ verbose: true }) as ChessJsMove[]
+          const defended = recaps.some((rm) => rm.to === m.to && rm.captured)
+          if (!defended || attackerValue < victimValue) threatened.add(m.to)
+        }
       }
+      if (!mateThreat && tmp.in_checkmate()) mateThreat = true
+      tmp.undo()
     }
 
     if (threatened.size > 0 && boardDiv) {
@@ -1194,15 +1186,14 @@ export function GameClient() {
         gameStartedRef.current = true
         startTimer()
       }
-      const moves = game.moves({ verbose: true }) as ChessJsMove[]
-      const promoMove = moves.find((m) => m.from === source && m.to === target && m.promotion)
-      if (promoMove) {
+      const move = game.move({ from: source, to: target, promotion: 'q' })
+      if (move !== null && move.promotion) {
+        game.undo()
         pendingMoveRef.current = { from: source, to: target }
         setPromotionColor(game.turn())
         setShowPromotion(true)
         return 'snapback'
       }
-      const move = game.move({ from: source, to: target, promotion: 'q' })
       if (move === null) {
         const el = document.getElementById('myBoard')
         if (el) {
@@ -1576,13 +1567,26 @@ export function GameClient() {
   }, [evalState])
 
   // Settings dropdown options
-  const inventory = typeof window !== 'undefined' ? getInventory() : null
-  const shopItems = getItems()
-  const ownedBoards = inventory ? shopItems.boards.filter((b) => inventory.boards.includes(b.id)) : []
-  const ownedPieces = inventory ? shopItems.pieces.filter((p) => inventory.pieces.includes(p.id)) : []
-  const ownedPowerups = inventory
-    ? shopItems.powerups.filter((pw) => (inventory.powerups[pw.id] ?? 0) > 0)
-    : []
+  const [inventoryVersion, setInventoryVersion] = useState(0)
+  useEffect(() => {
+    const handler = () => setInventoryVersion((v) => v + 1)
+    window.addEventListener(HYPERGRID_INVENTORY_CHANGED, handler)
+    return () => window.removeEventListener(HYPERGRID_INVENTORY_CHANGED, handler)
+  }, [])
+  const inventory = useMemo(() => (typeof window !== 'undefined' ? getInventory() : null), [inventoryVersion])
+  const shopItems = useMemo(() => getItems(), [])
+  const ownedBoards = useMemo(
+    () => (inventory ? shopItems.boards.filter((b) => inventory.boards.includes(b.id)) : []),
+    [inventory, shopItems],
+  )
+  const ownedPieces = useMemo(
+    () => (inventory ? shopItems.pieces.filter((p) => inventory.pieces.includes(p.id)) : []),
+    [inventory, shopItems],
+  )
+  const ownedPowerups = useMemo(
+    () => (inventory ? shopItems.powerups.filter((pw) => (inventory.powerups[pw.id] ?? 0) > 0) : []),
+    [inventory, shopItems],
+  )
 
   const handleBoardThemeChange = (theme: string) => {
     setBoardTheme(theme)
